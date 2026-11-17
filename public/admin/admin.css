@@ -92,3 +92,7 @@ kbd { border: 1px solid #ccc; border-bottom-width: 2px; border-radius: 4px; padd
 .btn.primary { background: #7c4dff; border-color: #7c4dff; color: #fff; }
 .btn.danger { background: #fff; border-color: #e5a3a3; color: #d93838; }
 .btn.wide { width: 100%; }
+
+/* 헤더 로고 — mwyc-main · mwyc-busking 과 같은 주황 MW 심볼(public/icons/) */
+.brand-mark { width: 32px; height: 32px; border-radius: 22%; flex: none; }
+.top h1 { display: inline-flex; align-items: center; gap: 10px; }

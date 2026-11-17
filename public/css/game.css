@@ -203,3 +203,7 @@ body {
   .logo { width: 100%; }
   .stage.portrait { height: auto; width: 100%; }
 }
+
+/* 헤더 로고 — mwyc-main · mwyc-busking 과 같은 주황 MW 심볼(public/icons/) */
+.brand-mark { width: 32px; height: 32px; border-radius: 22%; flex: none; }
+.logo { display: inline-flex; align-items: center; gap: 10px; }
