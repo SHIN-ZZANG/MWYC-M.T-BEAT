@@ -1,6 +1,6 @@
 name: deploy
 
-# master → 운영. 서버의 /opt/chshin/docker/project/mwyc_m.t_beat 에서 docker compose 로 뜬다.
+# master → 운영. 서버의 /opt/chshin/docker/project/mwyc/MWYC-M.T-BEAT 에서 docker compose 로 뜬다.
 on:
   push:
     branches: [master]
