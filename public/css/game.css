@@ -1,0 +1,205 @@
+:root {
+  --bg: #14121f;
+  --panel: #1f1c30;
+  --line: #34304d;
+  --text: #f3f1ff;
+  --muted: #a39fc2;
+  --accent: #7c4dff;
+  --card: #fffdf6;
+  --card-text: #2a2440;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  display: flex; flex-direction: column;
+}
+
+/* ── 상단 도구 막대 ── */
+.toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+.logo { font-size: 17px; margin: 0 8px 0 0; white-space: nowrap; }
+.field { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.field select {
+  background: var(--bg); color: var(--text); border: 1px solid var(--line);
+  border-radius: 6px; padding: 6px 8px; font-size: 14px; max-width: 220px;
+}
+.vol input { width: 90px; accent-color: var(--accent); }
+.spacer { flex: 1; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button {
+  background: transparent; color: var(--muted); border: 0; padding: 6px 10px; font-size: 13px; cursor: pointer;
+}
+.seg button.on { background: var(--accent); color: #fff; }
+.btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: transparent; color: var(--text); border: 1px solid var(--line);
+  border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer; text-decoration: none;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.big { font-size: 20px; padding: 12px 34px; border-radius: 999px; font-weight: 700; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── 무대 (밝은 종이 배경) ── */
+.stage-wrap {
+  flex: 1; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.stage {
+  --paper: #efede8;
+  --ink: #16151b;
+  --card-line: #1f2d45;   /* 카드 테두리 (진한 남색) */
+  --hit: #e3262b;         /* 지금 말할 카드 (빨강) */
+  --stage-muted: #6d6a76;
+  position: relative;
+  container-type: size;
+  color: var(--ink);
+  /* 종이 질감: 아주 옅은 얼룩 + 가는 결 */
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, .7), transparent 38%),
+    radial-gradient(circle at 82% 78%, rgba(0, 0, 0, .035), transparent 45%),
+    repeating-linear-gradient(115deg, rgba(0, 0, 0, .012) 0 2px, transparent 2px 6px),
+    var(--paper);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .45);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.stage.landscape {
+  aspect-ratio: 16 / 9;
+  width: min(100%, calc((100vh - 120px) * 16 / 9));
+  --cell: 32cqmin; /* 카드 한 변 */
+}
+.stage.portrait {
+  aspect-ratio: 9 / 16;
+  height: calc(100vh - 120px);
+  max-width: 100%;
+  --cell: 36cqmin;
+}
+.stage:fullscreen { border-radius: 0; width: 100vw; height: 100vh; aspect-ratio: auto; }
+
+/* 귀퉁이 장식: 찢은 종이 조각 + 스티커 */
+.deco { position: absolute; inset: 0; pointer-events: none; }
+.paper { position: absolute; background: #c9c7c2; box-shadow: 0 .3cqmin 1cqmin rgba(0, 0, 0, .12); }
+.paper::after { /* 공책 모눈 */
+  content: ''; position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, .35) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, .35) 1px, transparent 1px);
+  background-size: 2.2cqmin 2.2cqmin;
+}
+.paper-tr { top: -2cqmin; right: -2cqmin; width: 30cqmin; height: 22cqmin; transform: rotate(-8deg);
+  clip-path: polygon(8% 0, 100% 0, 100% 100%, 62% 86%, 40% 92%, 22% 62%, 0 48%, 4% 22%); }
+.paper-bl { bottom: -2cqmin; left: -2cqmin; width: 24cqmin; height: 18cqmin; transform: rotate(6deg);
+  clip-path: polygon(0 10%, 30% 0, 52% 14%, 74% 8%, 100% 40%, 92% 100%, 0 100%); }
+.sticker { position: absolute; font-size: 10cqmin; line-height: 1; filter: drop-shadow(0 .6cqmin .8cqmin rgba(0, 0, 0, .25)); }
+.st-tl { top: 3cqmin; left: 3cqmin; transform: rotate(-12deg); }
+.st-tr { top: 3cqmin; right: 4cqmin; transform: rotate(10deg); }
+.st-bl { bottom: 4cqmin; left: 3cqmin; transform: rotate(-8deg); }
+.st-br { bottom: 3cqmin; right: 4cqmin; transform: rotate(-18deg); }
+
+/* 위쪽 가운데 라운드 번호 (1/5) */
+.stage-head {
+  position: relative;
+  display: flex; justify-content: center; align-items: center;
+  padding: 3cqmin 4cqmin 0;
+  min-height: 13cqmin;
+}
+.round-label {
+  font-size: 8cqmin; font-weight: 900; font-style: italic; letter-spacing: .05em; color: var(--ink);
+  text-shadow: .5cqmin .5cqmin 0 #fff, -.3cqmin -.3cqmin 0 #fff, .3cqmin -.3cqmin 0 #fff, -.3cqmin .3cqmin 0 #fff;
+}
+
+.grid {
+  position: relative;
+  flex: 1; min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), var(--cell));
+  grid-template-rows: repeat(var(--rows, 2), var(--cell));
+  justify-content: center; align-content: start;
+  gap: 2.6cqmin;
+  padding: 2cqmin 4cqmin 4cqmin;
+}
+
+/* ── 카드: 남색 테두리 정사각형, 단어는 아래쪽에 흰 글씨 + 검은 외곽선 ── */
+.card {
+  container-type: size;
+  position: relative;
+  background: #fff;
+  color: var(--ink);
+  border: .7cqmin solid var(--card-line);
+  border-radius: .8cqmin;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding-bottom: calc(var(--cell) * .18); /* 이모지를 단어 자리 위로 올린다. 카드 자신의 cqmin 은 무대 기준이라 카드 크기로 계산 */
+  box-shadow: 0 .5cqmin 1.2cqmin rgba(0, 0, 0, .18);
+  overflow: hidden;
+  min-width: 0; min-height: 0;
+}
+.card-emoji { font-size: 52cqmin; line-height: 1.1; }
+.card-text {
+  position: absolute; left: 0; right: 0; bottom: 5cqmin;
+  padding: 0 4cqmin;
+  font-size: 16cqmin; font-weight: 900; color: #fff; text-align: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  text-shadow: /* 검은 외곽선 */
+    1.2cqmin 0 0 #111, -1.2cqmin 0 0 #111, 0 1.2cqmin 0 #111, 0 -1.2cqmin 0 #111,
+    .85cqmin .85cqmin 0 #111, -.85cqmin .85cqmin 0 #111, .85cqmin -.85cqmin 0 #111, -.85cqmin -.85cqmin 0 #111;
+}
+/* 사진 카드: 사진이 카드를 꽉 채운다 */
+.card.photo { padding: 0; background: #ddd; }
+.card-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* 이모지 없이 글자만 있는 카드: 단어를 가운데 크게 */
+.card.text-only { padding-bottom: 0; }
+.card.text-only .card-emoji { font-size: 26cqmin; font-weight: 900; padding: 0 6cqmin; text-align: center; word-break: keep-all; }
+.card.text-only .card-text,
+.grid.no-label .card-text { display: none; }
+
+.card.dim { opacity: .35; }                  /* 시작 전 미리보기 */
+.card.wait { visibility: hidden; }           /* 라운드 시작 — 듣기 박마다 한 장씩 나타난다 */
+.card.show { animation: cardIn .22s ease-out; }
+.card.active {                               /* 지금 말할 카드 */
+  border-color: var(--hit);
+  border-width: 1.4cqmin;
+  box-shadow: 0 0 0 .4cqmin rgba(227, 38, 43, .25), 0 .8cqmin 2cqmin rgba(0, 0, 0, .25);
+}
+@keyframes cardIn { from { opacity: 0; transform: scale(.6); } 70% { transform: scale(1.06); } }
+
+/* ── 시작 / 종료 패널 ── */
+.panel-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(239, 237, 232, .72);
+  backdrop-filter: blur(3px);
+}
+.panel-overlay[hidden] { display: none; }
+.panel {
+  text-align: center; padding: 3cqmin 6cqmin 3.5cqmin;
+  background: #fffdf8; border-radius: 1.2cqmin;
+  box-shadow: 0 1cqmin 3cqmin rgba(0, 0, 0, .18);
+  max-width: 88%;
+}
+.panel h2 { font-size: max(22px, 6cqmin); margin: 6px 0 8px; color: var(--ink); }
+.panel-emoji { font-size: max(40px, 12cqmin); }
+.muted { color: var(--stage-muted); font-size: max(13px, 2.6cqmin); margin: 0 0 18px; }
+.hint { color: var(--stage-muted); font-size: 12px; margin-top: 14px; opacity: .8; }
+.panel .btn.primary { background: var(--hit); border-color: var(--hit); }
+
+.stop-btn {
+  position: absolute; right: 2cqmin; bottom: 2cqmin; z-index: 2;
+  background: rgba(0, 0, 0, .55); color: #fff; border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; opacity: .5;
+}
+.stop-btn:hover { opacity: 1; }
+.stop-btn[hidden] { display: none; }
+
+@media (max-width: 600px) {
+  .logo { width: 100%; }
+  .stage.portrait { height: auto; width: 100%; }
+}

@@ -1,0 +1,25 @@
+services:
+  beat-word-game:
+    build:
+      context: .
+    container_name: beat-word-game
+    user: "0:0"                          # root 권한으로 실행 (모든 파일/폴더 생성 및 쓰기 허용)
+    ports:
+      - "3000:3000"                      # 좌변 = 서버에서 공개하는 포트 / 우변 = 앱 포트(항상 3000)
+    env_file:
+      - .env
+    environment:                         # .env 보다 우선한다 — .env 에 HOST=127.0.0.1 이 들어가도 밖에서 접속되게
+      - HOST=0.0.0.0
+      - PORT=3000
+    volumes:
+      - ./data:/app/data                 # 단어 세트(sets.json) · 사진(images/) · 배경음악(music/)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options: { max-size: "10m", max-file: "3" }

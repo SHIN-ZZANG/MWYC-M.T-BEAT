@@ -1,0 +1,51 @@
+{
+  "sets": [
+    {
+      "id": 1,
+      "name": "123",
+      "rounds": 5,
+      "showLabel": true,
+      "cardMode": "emoji",
+      "words": [
+        { "text": "고양이", "emoji": "🐱" },
+        { "text": "강아지", "emoji": "🐶" },
+        { "text": "돼지", "emoji": "🐷" },
+        { "text": "소", "emoji": "🐮" },
+        { "text": "토끼", "emoji": "🐰" },
+        { "text": "곰", "emoji": "🐻" }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "과일",
+      "rounds": 5,
+      "showLabel": true,
+      "cardMode": "emoji",
+      "words": [
+        { "text": "사과", "emoji": "🍎" },
+        { "text": "바나나", "emoji": "🍌" },
+        { "text": "포도", "emoji": "🍇" },
+        { "text": "딸기", "emoji": "🍓" },
+        { "text": "복숭아", "emoji": "🍑" },
+        { "text": "수박", "emoji": "🍉" }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "한 글자 (헷갈림 주의)",
+      "rounds": 6,
+      "showLabel": true,
+      "cardMode": "emoji",
+      "words": [
+        { "text": "곰", "emoji": "🐻" },
+        { "text": "공", "emoji": "⚽" },
+        { "text": "벌", "emoji": "🐝" },
+        { "text": "별", "emoji": "⭐" },
+        { "text": "배", "emoji": "🍐" },
+        { "text": "달", "emoji": "🌙" },
+        { "text": "닭", "emoji": "🐔" },
+        { "text": "눈", "emoji": "👀" }
+      ]
+    }
+  ]
+}

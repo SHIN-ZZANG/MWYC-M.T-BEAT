@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>비트 단어 게임</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/game.css">
+</head>
+<body>
+  <header class="toolbar">
+    <h1 class="logo">🎵 비트 단어 게임</h1>
+    <label class="field">
+      <span>단어 세트</span>
+      <select id="setSelect"></select>
+    </label>
+    <div class="seg" role="group" aria-label="화면 비율">
+      <button type="button" data-orient="landscape">가로 16:9</button>
+      <button type="button" data-orient="portrait">세로 9:16</button>
+    </div>
+    <label class="field vol">
+      <span>음량</span>
+      <input id="volume" type="range" min="0" max="100" value="80">
+    </label>
+    <div class="spacer"></div>
+    <button type="button" id="fullscreenBtn" class="btn">⛶ 전체화면</button>
+    <a href="/admin/" class="btn">⚙ 설정</a>
+  </header>
+
+  <main class="stage-wrap">
+    <section id="stage" class="stage landscape">
+      <!-- 종이 배경 장식 (화면 네 귀퉁이) -->
+      <div class="deco" aria-hidden="true">
+        <span class="paper paper-tr"></span>
+        <span class="paper paper-bl"></span>
+        <span class="sticker st-tl">📣</span>
+        <span class="sticker st-tr">💡</span>
+        <span class="sticker st-bl">❗</span>
+        <span class="sticker st-br">🔔</span>
+      </div>
+      <div class="stage-head">
+        <span id="roundLabel" class="round-label"></span>
+      </div>
+      <div id="grid" class="grid"></div>
+
+      <div id="idleOverlay" class="panel-overlay">
+        <div class="panel">
+          <div class="panel-emoji">🎤</div>
+          <h2>비트에 맞춰 말해요!</h2>
+          <p id="idleSetInfo" class="muted"></p>
+          <button type="button" id="startBtn" class="btn big primary">▶ 시작</button>
+          <p class="hint">Space = 시작 / 정지</p>
+        </div>
+      </div>
+
+      <div id="endOverlay" class="panel-overlay" hidden>
+        <div class="panel">
+          <div class="panel-emoji">🎉</div>
+          <h2>클리어!</h2>
+          <p id="endInfo" class="muted"></p>
+          <button type="button" id="againBtn" class="btn big primary">↻ 한 번 더</button>
+        </div>
+      </div>
+
+      <button type="button" id="stopBtn" class="stop-btn" hidden>■ 정지</button>
+    </section>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/beat.js"></script>
+  <script src="/js/game.js"></script>
+  <link rel="stylesheet" href="/css/dialog.css">
+  <script src="/js/dialog.js"></script>
+</body>
+</html>

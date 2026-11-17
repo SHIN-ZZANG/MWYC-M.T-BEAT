@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>단어 세트 설정</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <header class="top">
+    <h1>⚙ 단어 세트 설정</h1>
+    <a href="/" class="btn">🎵 게임으로</a>
+  </header>
+
+  <div class="layout">
+    <aside class="side">
+      <button type="button" id="newBtn" class="btn primary wide">＋ 새 세트</button>
+      <ul id="setList" class="set-list"></ul>
+    </aside>
+
+    <main class="editor">
+      <form id="form" autocomplete="off">
+        <h2 id="formTitle">새 세트</h2>
+
+        <div class="row">
+          <label class="f grow">세트 이름
+            <input name="name" maxlength="40" required placeholder="예: 동물">
+          </label>
+        </div>
+
+        <div class="row fields fields-2">
+          <label class="f">라운드 수
+            <input name="rounds" type="number" min="1" max="20" value="5" required>
+            <span class="hint">몇 번 반복할지.<br>1~20</span>
+          </label>
+          <label class="f">카드 표시
+            <select name="cardMode">
+              <option value="emoji" selected>이모지</option>
+              <option value="photo">사진</option>
+            </select>
+            <span class="hint">사진을 고르면 단어마다 사진을 올릴 수 있습니다.<br>사진이 없는 단어는 이모지로 나옵니다.</span>
+          </label>
+        </div>
+
+        <div class="speed-preview" id="speedPreview">
+          <div class="sp-sum">
+            <span id="spTime"></span>
+            <span id="spLevel" class="level"></span>
+          </div>
+          <p class="sp-note">카드 하나에 주어지는 시간 기준입니다. 단어가 길수록 실제로는 더 어렵습니다.</p>
+        </div>
+
+        <label class="check">
+          <input name="showLabel" type="checkbox" checked>
+          <span>카드에 단어 글자도 표시
+            <span class="hint">끄면 그림만 보고 말해야 해서 더 어려워집니다.</span></span>
+        </label>
+
+        <h3>단어 <span id="wordCount" class="muted"></span></h3>
+        <ul class="guide">
+          <li>단어는 2~50개 넣을 수 있습니다. <b>짧은 단어</b>일수록 빠른 박자에서도 말하기 쉽습니다.</li>
+          <li>첫 라운드는 <b>4가지 단어</b>가 2번씩 나오고, 라운드마다 종류가 1개씩 늘어납니다.
+            같은 단어는 한 라운드에 <b>최대 2번</b>입니다. 단어 수가 카드 수 이상이면 마지막 쪽 라운드는 중복 없이 나옵니다.</li>
+          <li>이모지는 비워도 됩니다. 그때는 카드에 단어 글자가 크게 나옵니다.
+            Windows 는 <kbd>Win</kbd> + <kbd>.</kbd> 으로 이모지를 넣을 수 있습니다.</li>
+          <li>마지막 칸에서 <kbd>Enter</kbd> 를 누르면 새 줄이 추가됩니다.</li>
+        </ul>
+        <p class="guide-photo photo-only">📷 사진 칸을 눌러 사진을 고르세요. 가운데 기준으로 <b>정사각형으로 잘려</b> 512px 로 줄여 저장됩니다.
+          ✕ 를 누르면 사진만 뺍니다. 영상으로 올릴 거라면 직접 찍은 사진이나 무료 이미지를 쓰세요 (저작권).</p>
+        <div id="wordsBox" class="words-box">
+          <div class="words-head"><span class="photo-only">사진</span><span>이모지</span><span>단어</span><span></span></div>
+          <div id="words" class="words"></div>
+        </div>
+        <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+        <button type="button" id="addWordBtn" class="btn">＋ 단어 추가</button>
+
+        <div class="actions">
+          <button type="button" id="deleteBtn" class="btn danger" hidden>삭제</button>
+          <div class="spacer"></div>
+          <button type="submit" class="btn primary">저장</button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/admin/admin.js"></script>
+  <link rel="stylesheet" href="/css/dialog.css">
+  <script src="/js/dialog.js"></script>
+</body>
+</html>
