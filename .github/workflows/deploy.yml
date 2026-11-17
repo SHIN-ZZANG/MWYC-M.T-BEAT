@@ -26,7 +26,7 @@ jobs:
       - name: 배포 대상 정하기
         run: |
           if [ "$BRANCH" = "master" ]; then
-            echo "DEPLOY_DIR=/opt/chshin/docker/project/mwyc_m.t_beat" >> "$GITHUB_ENV"
+            echo "DEPLOY_DIR=/opt/chshin/docker/project/mwyc/MWYC-M.T-BEAT" >> "$GITHUB_ENV"
             echo "SERVICE_URL=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_ENV"
             echo "ENV_LABEL=운영" >> "$GITHUB_ENV"
           fi
