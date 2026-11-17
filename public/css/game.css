@@ -52,6 +52,7 @@ body {
   flex: 1; min-height: 0;
   display: flex; align-items: center; justify-content: center;
   padding: 16px;
+  container-type: size; /* 무대 크기를 남은 공간(설치 안내 띠 · 도구 막대를 뺀 높이) 기준으로 잡는다 */
 }
 .stage {
   --paper: #efede8;
@@ -75,13 +76,12 @@ body {
 }
 .stage.landscape {
   aspect-ratio: 16 / 9;
-  width: min(100%, calc((100vh - 120px) * 16 / 9));
+  width: min(100cqw, 100cqh * 16 / 9);
   --cell: 32cqmin; /* 카드 한 변 */
 }
 .stage.portrait {
   aspect-ratio: 9 / 16;
-  height: calc(100vh - 120px);
-  max-width: 100%;
+  height: min(100cqh, 100cqw * 16 / 9);
   --cell: 36cqmin;
 }
 .stage:fullscreen { border-radius: 0; width: 100vw; height: 100vh; aspect-ratio: auto; }
@@ -201,7 +201,6 @@ body {
 
 @media (max-width: 600px) {
   .logo { width: 100%; }
-  .stage.portrait { height: auto; width: 100%; }
 }
 
 /* 헤더 로고 — mwyc-main · mwyc-busking 과 같은 주황 MW 심볼(public/icons/) */

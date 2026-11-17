@@ -96,3 +96,16 @@ kbd { border: 1px solid #ccc; border-bottom-width: 2px; border-radius: 4px; padd
 /* 헤더 로고 — mwyc-main · mwyc-busking 과 같은 주황 MW 심볼(public/icons/) */
 .brand-mark { width: 32px; height: 32px; border-radius: 22%; flex: none; }
 .top h1 { display: inline-flex; align-items: center; gap: 10px; }
+
+/* 라운드 구성 */
+.plan-box { border: 1px solid #e6e3f0; border-radius: 8px; padding: 8px 14px; margin: 4px 0 14px; max-width: 640px; }
+.plan-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.plan-check { margin: 4px 0; }
+.plan-table { border-collapse: collapse; font-size: 14px; margin: 4px 0 8px; }
+.plan-table th { font-size: 12px; color: #888; font-weight: 600; text-align: left; padding: 4px 10px 4px 0; }
+.plan-table td { padding: 3px 10px 3px 0; }
+.plan-table td:first-child { color: #666; width: 56px; }
+.plan-table input { width: 64px; }
+.plan-warn { font-size: 12px; color: #c0392b; background: #fff1f0; border: 1px solid #f5c2bd; border-radius: 6px;
+             padding: 6px 10px; margin: 0 0 8px; white-space: pre-line; }
+.plan-warn[hidden], #planArea[hidden] { display: none; }

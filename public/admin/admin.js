@@ -174,8 +174,110 @@
     el.textContent = `난이도: ${lv.label}`;
   }
 
-  function markDirty() { dirty = true; }
-  form.addEventListener('input', () => { markDirty(); updateCount(); updateBpmNote(); });
+  // ── 라운드 구성 ────────────────────────
+  // 라운드마다 { kinds: 나올 단어 종류 수, show: 'text' | 'mix' | 'image' }. 끄면 빈 배열(자동).
+  const planBody = $('#planBody');
+  const SHOWS = [['text', '단어'], ['mix', '섞기'], ['image', '사진']];
+
+  function planRow(p) {
+    const tr = document.createElement('tr');
+    const no = document.createElement('td');
+    const kc = document.createElement('td');
+    const kinds = document.createElement('input');
+    kinds.type = 'number';
+    kinds.className = 'kinds';
+    kinds.min = 2;
+    kinds.max = 8;
+    kinds.value = p.kinds;
+    kc.append(kinds, ' 개');
+    const sc = document.createElement('td');
+    const show = document.createElement('select');
+    show.className = 'show';
+    SHOWS.forEach(([v, label]) => show.add(new Option(label, v)));
+    show.value = p.show;
+    sc.appendChild(show);
+    tr.append(no, kc, sc);
+    return tr;
+  }
+
+  function readPlan() {
+    return [...planBody.rows].map((r) => ({
+      kinds: Number(r.querySelector('.kinds').value),
+      show: r.querySelector('.show').value,
+    }));
+  }
+
+  // 라운드 수가 바뀌면 줄 수를 맞춘다 (늘어나면 마지막 줄을 복사)
+  function syncPlanRows() {
+    const n = Number(form.rounds.value);
+    if (!Number.isInteger(n) || n < 1 || n > 20 || !planBody.rows.length) return; // 비어 있으면 켤 때 추천으로 채운다
+    while (planBody.rows.length < n) {
+      const last = readPlan().at(-1) || { kinds: 3, show: 'text' };
+      planBody.appendChild(planRow(last));
+    }
+    while (planBody.rows.length > n) planBody.lastElementChild.remove();
+    [...planBody.rows].forEach((r, i) => { r.cells[0].textContent = `${i + 1}`; });
+  }
+
+  // 추천: 앞 3/7 은 단어, 뒤 2/7 은 사진, 사이는 섞기. 단어 수는 3에서 1개씩 늘어 넣은 단어 수까지.
+  function recommendedPlan(n, wordCount) {
+    const maxK = Math.max(2, Math.min(8, wordCount));
+    const text = Math.max(1, Math.round(n * 3 / 7));
+    const image = Math.min(n - text, Math.round(n * 2 / 7));
+    const mix = n - text - image;
+    return Array.from({ length: n }, (_, i) => ({
+      kinds: Math.min(maxK, 3 + i),
+      show: i < text ? 'text' : i < text + mix ? 'mix' : 'image',
+    }));
+  }
+
+  function setPlan(plan) {
+    planBody.replaceChildren(...plan.map(planRow));
+    syncPlanRows();
+  }
+
+  function setPlanOn(on) {
+    form.planOn.checked = on;
+    $('#planArea').hidden = !on;
+  }
+
+  function fillRecommended() {
+    const n = Number(form.rounds.value) || 1;
+    setPlan(recommendedPlan(n, collectWords().filter((w) => w.text).length));
+    setPlanOn(true);
+    markDirty();
+  }
+
+  function updatePlanWarn() {
+    const warn = $('#planWarn');
+    const msgs = [];
+    if (form.planOn.checked) {
+      const words = collectWords().filter((w) => w.text);
+      readPlan().forEach((p, i) => {
+        if (p.kinds > words.length) msgs.push(`${i + 1}라운드 — 단어 수(${p.kinds})가 넣은 단어(${words.length}개)보다 많습니다.`);
+      });
+      if (readPlan().some((p) => p.show !== 'text')) {
+        const bare = words.filter((w) => !w.image && !w.emoji).map((w) => w.text);
+        const emojiOnly = words.filter((w) => !w.image && w.emoji).map((w) => w.text);
+        if (bare.length) msgs.push(`사진 · 이모지가 없어 사진 라운드에서도 글자로 나오는 단어: ${bare.join(', ')}`);
+        if (emojiOnly.length) msgs.push(`사진이 없어 이모지로 나오는 단어: ${emojiOnly.join(', ')}`);
+      }
+    }
+    warn.textContent = msgs.join('\n');
+    warn.hidden = !msgs.length;
+  }
+
+  form.planOn.addEventListener('change', () => {
+    if (form.planOn.checked && !planBody.rows.length) fillRecommended();
+    setPlanOn(form.planOn.checked);
+  });
+  $('#planFillBtn').addEventListener('click', fillRecommended);
+
+  function markDirty() { dirty = true; updatePlanWarn(); }
+  form.addEventListener('input', (e) => {
+    if (e.target === form.rounds) syncPlanRows();
+    markDirty(); updateCount(); updateBpmNote();
+  });
 
   // ── 목록 ───────────────────────────────
   function renderList() {
@@ -206,7 +308,10 @@
     form.showLabel.checked = s.showLabel;
     wordsEl.replaceChildren();
     s.words.forEach((w) => addWordRow(w));
+    setPlan(s.plan || []);
+    setPlanOn(!!(s.plan && s.plan.length));
     updateBpmNote();
+    updatePlanWarn();
     dirty = false;
   }
 
@@ -247,6 +352,7 @@
       name: form.name.value.trim(),
       rounds: +form.rounds.value,
       showLabel: form.showLabel.checked,
+      plan: form.planOn.checked ? readPlan() : [],
       words: collectWords(),
     };
     try {

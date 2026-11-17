@@ -7,6 +7,8 @@
   <link rel="icon" href="/icons/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#1f1c30">
   <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body>
@@ -38,6 +40,30 @@
           </label>
         </div>
 
+        <div class="plan-box">
+          <div class="plan-top">
+            <label class="check plan-check">
+              <input name="planOn" type="checkbox">
+              <span>라운드마다 직접 정하기
+                <span class="hint">끄면 자동 — 단어 종류가 라운드마다 1개씩 늘고, 카드는 사진 → 이모지 → 글자 순으로 나옵니다.</span></span>
+            </label>
+            <button type="button" id="planFillBtn" class="btn">추천 구성 채우기</button>
+          </div>
+          <div id="planArea" hidden>
+            <ul class="guide">
+              <li><b>단어 수</b> — 그 라운드에 나올 단어 종류. 넣은 단어 중에서 무작위로 고릅니다.</li>
+              <li><b>단어</b> = 글자만 · <b>섞기</b> = 카드 절반쯤 사진 · <b>사진</b> = 모두 사진(사진이 없으면 이모지, 그것도 없으면 글자).</li>
+              <li>사진 카드 밑의 이름은 아래 <b>카드에 단어 글자도 표시</b>를 따릅니다. 끄면 얼굴만 보고 말해야 합니다.</li>
+              <li><b>추천 구성</b> — 앞쪽은 단어, 중간은 섞기, 뒤쪽은 사진. 단어 수는 3개에서 시작해 1개씩 늘어납니다.</li>
+            </ul>
+            <table class="plan-table">
+              <thead><tr><th>라운드</th><th>단어 수</th><th>카드 표시</th></tr></thead>
+              <tbody id="planBody"></tbody>
+            </table>
+            <p id="planWarn" class="plan-warn" hidden></p>
+          </div>
+        </div>
+
         <div class="speed-preview" id="speedPreview">
           <div class="sp-sum">
             <span id="spTime"></span>
@@ -55,8 +81,8 @@
         <h3>단어 <span id="wordCount" class="muted"></span></h3>
         <ul class="guide">
           <li>단어는 2~50개 넣을 수 있습니다. <b>짧은 단어</b>일수록 빠른 박자에서도 말하기 쉽습니다.</li>
-          <li>첫 라운드는 <b>4가지 단어</b>가 2번씩 나오고, 라운드마다 종류가 1개씩 늘어납니다.
-            같은 단어는 한 라운드에 <b>최대 2번</b>입니다. 단어 수가 카드 수 이상이면 마지막 쪽 라운드는 중복 없이 나옵니다.</li>
+          <li>라운드마다 카드 8장을 고른 단어로 <b>가능한 한 고르게</b> 채웁니다 (3종류면 3·3·2번, 4종류 이상이면 최대 2번).
+            같은 단어가 바로 연달아 나오지는 않습니다. 자동 구성은 첫 라운드 4종류에서 라운드마다 1개씩 늘어납니다.</li>
           <li>카드 그림은 <b>단어마다</b> 정합니다. <b>사진</b>을 올리면 사진, 아니면 <b>이모지</b>, 둘 다 없으면 <b>단어 글자</b>가 크게 나옵니다.
             한 세트 안에서 섞어 써도 됩니다. Windows 는 <kbd>Win</kbd> + <kbd>.</kbd> 으로 이모지를 넣을 수 있습니다.</li>
           <li>마지막 칸에서 <kbd>Enter</kbd> 를 누르면 새 줄이 추가됩니다.</li>

@@ -43,6 +43,23 @@ function sanitizeWord(w, fix) {
   return out;
 }
 
+// 라운드 구성: 비어 있으면 자동(종류 수가 라운드마다 늘고 카드는 사진 > 이모지 > 글자).
+// 있으면 라운드 수와 길이를 맞춘다 (모자라면 마지막 줄을 되풀이, 넘치면 자른다).
+function sanitizePlan(plan, rounds, fix) {
+  if (plan === undefined || plan === null) return [];
+  if (!Array.isArray(plan)) { fix('plan', plan, []); return []; }
+  if (!plan.length) return [];
+  const out = plan.slice(0, rounds).map((p, i) => {
+    const kinds = clampInt(p?.kinds, LIMITS.kindsMin, LIMITS.kindsMax, LIMITS.kindsMin, fix, `plan[${i}].kinds`);
+    let show = p?.show;
+    if (!LIMITS.shows.includes(show)) { fix(`plan[${i}].show`, show, 'image'); show = 'image'; }
+    return { kinds, show };
+  });
+  if (plan.length !== rounds) fix('plan', `${plan.length}줄`, `${rounds}줄 (라운드 수에 맞춤)`);
+  while (out.length < rounds) out.push({ ...out[out.length - 1] });
+  return out;
+}
+
 function sanitizeSet(s, id, fix) {
   let name = String(s.name ?? '').trim();
   if (!name) { name = `세트 ${id}`; fix('name', s.name, name); }
@@ -52,6 +69,9 @@ function sanitizeSet(s, id, fix) {
   if (typeof showLabel !== 'boolean') { fix('showLabel', showLabel, !!showLabel); showLabel = !!showLabel; }
 
   // 예전 파일의 cardMode(세트 단위 이모지/사진)는 읽지 않는다 — 단어마다 사진 > 이모지 > 글자 순으로 정해진다
+
+  const rounds = clampInt(s.rounds, LIMITS.roundsMin, LIMITS.roundsMax, DEFAULTS.rounds, fix, 'rounds');
+  const plan = sanitizePlan(s.plan, rounds, fix);
   let words = (Array.isArray(s.words) ? s.words : []).map((w) => sanitizeWord(w, fix)).filter((w) => w.text);
   if (words.length > LIMITS.wordsMax) { fix('words', `${words.length}개`, `${LIMITS.wordsMax}개`); words = words.slice(0, LIMITS.wordsMax); }
   if (words.length < LIMITS.wordsMin) fix('words', `${words.length}개`, `게임 불가 (최소 ${LIMITS.wordsMin}개)`);
@@ -59,8 +79,9 @@ function sanitizeSet(s, id, fix) {
   return {
     id,
     name,
-    rounds: clampInt(s.rounds, LIMITS.roundsMin, LIMITS.roundsMax, DEFAULTS.rounds, fix, 'rounds'),
+    rounds,
     showLabel,
+    plan,
     words,
   };
 }
@@ -117,6 +138,7 @@ function format(data) {
   return JSON.stringify(out, null, 2)
     .replace(/\{\n\s+("text": [^\n]*)\n((?:\s+"(?:emoji|image)": [^\n]*\n)*)\s+\}/g,
       (_, first, rest) => `{ ${[first, ...rest.split('\n').map((l) => l.trim()).filter(Boolean)].join(' ')} }`)
+    .replace(/\{\n\s+("kinds": [^\n]*)\n\s+("show": [^\n]*)\n\s+\}/g, '{ $1 $2 }')
     + '\n';
 }
 
@@ -129,7 +151,7 @@ function write(data) {
 }
 
 const pick = (s) => ({
-  name: s.name, rounds: s.rounds, showLabel: s.showLabel, words: s.words,
+  name: s.name, rounds: s.rounds, showLabel: s.showLabel, plan: s.plan ?? [], words: s.words,
 });
 
 // 시작할 때 파일을 한 번 읽어 형식을 확인한다 (오류면 그대로 던짐)

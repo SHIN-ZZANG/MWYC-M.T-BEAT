@@ -1,0 +1,35 @@
+/* 화면 맨 위 "앱으로 설치" 안내 띠 (public/js/install.js) — STAGE-Q 설치 띠와 같은 모양.
+   화면 위에 떠서 위에서 내려온다. 아래 내용을 밀어내지 않는다. 숨길 때 그림자까지 가리려고 제 높이보다 더 올린다. */
+.install-bar {
+  position: fixed; left: 50%; z-index: 9000; top: calc(.75rem + env(safe-area-inset-top));
+  width: min(30rem, calc(100vw - 1.5rem));
+  display: flex; align-items: center; gap: .8rem; padding: .8rem .9rem;
+  border-radius: 1rem; border: 1px solid #e2e8f0; background: #fff; color: #1e293b;
+  box-shadow: 0 1rem 2.5rem rgba(15, 23, 42, .18);
+  font-family: system-ui, -apple-system, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  transform: translate(-50%, calc(-100% - 3rem)); opacity: 0;
+  transition: transform .3s ease, opacity .3s ease;
+}
+.install-bar.on { transform: translate(-50%, 0); opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .install-bar { transition: none; } }
+
+.install-icon { flex: none; width: 2.6rem; height: 2.6rem; border-radius: .7rem; border: 1px solid #e2e8f0; }
+.install-text { flex: 1; min-width: 0; }
+.install-title { margin: 0; font-size: .88rem; font-weight: 700; }
+.install-sub { margin: .1rem 0 0; font-size: .76rem; line-height: 1.45; color: #64748b; }
+
+.install-btns { flex: none; display: flex; gap: .4rem; }
+.install-btns button {
+  padding: .42rem .85rem; border-radius: 999px; font: inherit; font-size: .8rem; font-weight: 700;
+  border: 1px solid #e2e8f0; color: #475569; background: #fff; cursor: pointer;
+}
+.install-btns button:hover { background: #f1f5f9; }
+.install-btns button[hidden] { display: none; }
+.install-btns .primary { background: #7c4dff; border-color: #7c4dff; color: #fff; } /* 게임 주 색 */
+.install-btns .primary:hover { background: #6a3cf0; }
+
+/* 좁은 화면: 한 줄로 버티면 글자가 두 자씩 잘린다 — 버튼을 아래 줄로 */
+@media (max-width: 30rem) {
+  .install-bar { flex-wrap: wrap; }
+  .install-btns { width: 100%; justify-content: flex-end; }
+}

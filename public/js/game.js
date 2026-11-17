@@ -119,6 +119,15 @@
     return emojiEl(c, w);
   }
 
+  // 글자 카드 — 단어를 크게
+  function textEl(c, w) {
+    const e = document.createElement('div');
+    e.className = 'card-emoji';
+    e.textContent = w.text;
+    c.classList.add('text-only');
+    return e;
+  }
+
   function emojiEl(c, w) {
     const e = document.createElement('div');
     e.className = 'card-emoji';
@@ -127,13 +136,14 @@
     return e;
   }
 
+  // seq: [{ w: 단어, face: 'text' | 'image' }]
   function renderCards(seq) {
     el.grid.classList.toggle('no-label', !current.showLabel);
-    cards = seq.map((w, i) => {
+    cards = seq.map(({ w, face: kind }, i) => {
       const c = document.createElement('div');
       c.className = 'card';
       c.style.setProperty('--i', i);
-      const face = cardFace(c, w);
+      const face = kind === 'text' ? textEl(c, w) : cardFace(c, w);
       const t = document.createElement('div');
       t.className = 'card-text';
       t.textContent = w.text;
@@ -144,7 +154,7 @@
   }
 
   function renderPreview() {
-    renderCards(current.words.slice(0, music.cards));
+    renderCards(current.words.slice(0, music.cards).map((w) => ({ w, face: 'image' })));
     cards.forEach((c) => c.classList.add('dim'));
     el.roundLabel.textContent = '';
   }
@@ -160,12 +170,31 @@
 
   // 단어 종류는 카드 수의 절반에서 시작해 라운드마다 1개씩 늘어난다 (8장: 4 → 5 → … → 8).
   // 횟수는 종류마다 고르게 나눠 같은 단어는 최대 2번 (단어가 모자란 세트만 그 이상).
-  function makeSequence(words, n, round) {
-    const distinct = Math.min(words.length, n, Math.ceil(n / 2) + round);
+  // 라운드 구성(plan)이 있으면 그 라운드의 종류 수 · 표시 방식을 따른다.
+  // 횟수는 종류마다 가능한 한 고르게 나눈다 (8장에 3종류면 3·3·2번, 4종류 이상이면 최대 2번).
+  // 같은 단어가 바로 연달아 나오지 않게 섞는다.
+  function makeSequence(set, n, round) {
+    const step = set.plan && set.plan[round];
+    const words = set.words;
+    const distinct = Math.max(1, Math.min(words.length, n, step ? step.kinds : Math.ceil(n / 2) + round));
     const pool = shuffle([...words]).slice(0, distinct);
-    const seq = [];
-    for (let i = 0; i < n; i++) seq.push(pool[i % pool.length]); // 고르게 채우기
-    return shuffle(seq);
+    const base = [];
+    for (let i = 0; i < n; i++) base.push(pool[i % pool.length]); // 고르게 채우기
+    let seq = shuffle([...base]);
+    for (let tries = 0; tries < 300 && hasAdjacent(seq); tries++) seq = shuffle([...base]);
+
+    // 카드마다 글자로 보일지 그림으로 보일지
+    const show = step ? step.show : 'image';
+    const faces = seq.map(() => (show === 'text' ? 'text' : 'image'));
+    if (show === 'mix') {
+      const idx = shuffle(seq.map((_, i) => i));
+      idx.slice(0, Math.ceil(n / 2)).forEach((i) => { faces[i] = 'text'; });
+    }
+    return seq.map((w, i) => ({ w, face: faces[i] }));
+  }
+
+  function hasAdjacent(seq) {
+    return seq.some((w, i) => i > 0 && w === seq[i - 1]);
   }
 
   function buildTimeline(set, t0) {
@@ -177,7 +206,7 @@
     const bpm = music.bpm;
     const spb = 60 / bpm;
     for (let r = 0; r < set.rounds; r++) {
-      events.push({ t, kind: 'round', round: r, bpm, seq: makeSequence(set.words, n, r) });
+      events.push({ t, kind: 'round', round: r, bpm, seq: makeSequence(set, n, r) });
       for (let l = 0; l < listen; l++) {
         // 듣기 박마다 카드를 한 장씩 보여 준다 (카드가 듣기 박보다 많으면 마지막 박에 나머지를 한꺼번에)
         beats.push({ t, spb, part: 'listen', n: l });

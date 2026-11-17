@@ -4,6 +4,12 @@ export const LIMITS = {
   roundsMin: 1, roundsMax: 20, // 20라운드 × 16박 = 320박 — 곡(344박) 안에 다 들어간다
   wordsMin: 2, wordsMax: 50,
   text: 20, emoji: 16,
+  // 라운드 구성(plan) — 라운드마다 나올 단어 종류 수와 카드 표시 방식
+  //   text  : 글자만 (사진 · 이모지 무시)
+  //   mix   : 카드 절반쯤은 그림(사진 > 이모지), 나머지는 글자
+  //   image : 모두 그림 (사진 > 이모지 > 글자)
+  kindsMin: 2, kindsMax: 8, // 최대 = 라운드 카드 수(GAME_MUSIC.cards)
+  shows: ['text', 'mix', 'image'],
 };
 
 export const DEFAULTS = {

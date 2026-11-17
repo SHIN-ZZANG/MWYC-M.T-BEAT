@@ -45,12 +45,30 @@ function normalize(body) {
   if (words.length < LIMITS.wordsMin) throw new HttpError(400, `단어를 ${LIMITS.wordsMin}개 이상 넣으세요.`);
   if (words.length > LIMITS.wordsMax) throw new HttpError(400, `단어는 ${LIMITS.wordsMax}개까지 넣을 수 있습니다.`);
 
+  const rounds = int(body.rounds, '라운드 수', LIMITS.roundsMin, LIMITS.roundsMax);
+  const plan = normalizePlan(body.plan, rounds, words.length);
+
   return {
     name,
-    rounds: int(body.rounds, '라운드 수', LIMITS.roundsMin, LIMITS.roundsMax),
+    rounds,
+    plan,
     showLabel: !!body.showLabel,
     words,
   };
+}
+
+// 라운드 구성: 빈 배열이면 자동. 직접 정하면 라운드 수만큼 줄이 있어야 한다.
+function normalizePlan(plan, rounds, wordCount) {
+  if (plan === undefined || plan === null) return [];
+  if (!Array.isArray(plan)) throw new HttpError(400, '라운드 구성 형식이 잘못되었습니다.');
+  if (!plan.length) return [];
+  if (plan.length !== rounds) throw new HttpError(400, `라운드 구성이 ${plan.length}줄입니다. 라운드 수(${rounds})와 같아야 합니다.`);
+  return plan.map((p, i) => {
+    const kinds = int(p?.kinds, `${i + 1}라운드 단어 수`, LIMITS.kindsMin, LIMITS.kindsMax);
+    if (kinds > wordCount) throw new HttpError(400, `${i + 1}라운드 단어 수(${kinds})가 넣은 단어 수(${wordCount})보다 많습니다.`);
+    if (!LIMITS.shows.includes(p?.show)) throw new HttpError(400, `${i + 1}라운드 카드 표시는 단어 · 섞기 · 사진 중 하나여야 합니다.`);
+    return { kinds, show: p.show };
+  });
 }
 
 function parseId(raw) {

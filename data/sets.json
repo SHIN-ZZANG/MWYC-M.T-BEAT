@@ -5,7 +5,7 @@
       "name": "123",
       "rounds": 5,
       "showLabel": true,
-      "cardMode": "emoji",
+      "plan": [],
       "words": [
         { "text": "고양이", "emoji": "🐱" },
         { "text": "강아지", "emoji": "🐶" },
@@ -20,7 +20,7 @@
       "name": "과일",
       "rounds": 5,
       "showLabel": true,
-      "cardMode": "emoji",
+      "plan": [],
       "words": [
         { "text": "사과", "emoji": "🍎" },
         { "text": "바나나", "emoji": "🍌" },
@@ -35,7 +35,7 @@
       "name": "한 글자 (헷갈림 주의)",
       "rounds": 6,
       "showLabel": true,
-      "cardMode": "emoji",
+      "plan": [],
       "words": [
         { "text": "곰", "emoji": "🐻" },
         { "text": "공", "emoji": "⚽" },
@@ -45,6 +45,94 @@
         { "text": "달", "emoji": "🌙" },
         { "text": "닭", "emoji": "🐔" },
         { "text": "눈", "emoji": "👀" }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "테마 1",
+      "rounds": 7,
+      "showLabel": false,
+      "plan": [
+        { "kinds": 3, "show": "text" },
+        { "kinds": 4, "show": "text" },
+        { "kinds": 5, "show": "text" },
+        { "kinds": 5, "show": "mix" },
+        { "kinds": 5, "show": "mix" },
+        { "kinds": 5, "show": "image" },
+        { "kinds": 5, "show": "image" }
+      ],
+      "words": [
+        { "text": "윤기", "emoji": "" },
+        { "text": "민기", "emoji": "" },
+        { "text": "윤미", "emoji": "" },
+        { "text": "땨기", "emoji": "" },
+        { "text": "윤민", "emoji": "" }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "테마 2",
+      "rounds": 7,
+      "showLabel": false,
+      "plan": [
+        { "kinds": 3, "show": "text" },
+        { "kinds": 4, "show": "text" },
+        { "kinds": 5, "show": "text" },
+        { "kinds": 5, "show": "mix" },
+        { "kinds": 5, "show": "mix" },
+        { "kinds": 5, "show": "image" },
+        { "kinds": 5, "show": "image" }
+      ],
+      "words": [
+        { "text": "선민", "emoji": "" },
+        { "text": "쑥민", "emoji": "" },
+        { "text": "지민", "emoji": "" },
+        { "text": "원빈", "emoji": "" },
+        { "text": "썬민", "emoji": "" }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "테마 3",
+      "rounds": 7,
+      "showLabel": false,
+      "plan": [
+        { "kinds": 3, "show": "text" },
+        { "kinds": 4, "show": "text" },
+        { "kinds": 5, "show": "text" },
+        { "kinds": 5, "show": "mix" },
+        { "kinds": 5, "show": "mix" },
+        { "kinds": 5, "show": "image" },
+        { "kinds": 5, "show": "image" }
+      ],
+      "words": [
+        { "text": "채연", "emoji": "" },
+        { "text": "은채", "emoji": "" },
+        { "text": "창훈", "emoji": "" },
+        { "text": "딤채", "emoji": "" },
+        { "text": "화채", "emoji": "" }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "테마 4",
+      "rounds": 7,
+      "showLabel": false,
+      "plan": [
+        { "kinds": 3, "show": "text" },
+        { "kinds": 4, "show": "text" },
+        { "kinds": 5, "show": "text" },
+        { "kinds": 5, "show": "mix" },
+        { "kinds": 5, "show": "mix" },
+        { "kinds": 5, "show": "image" },
+        { "kinds": 5, "show": "image" }
+      ],
+      "words": [
+        { "text": "예린", "emoji": "" },
+        { "text": "예진", "emoji": "" },
+        { "text": "혜린", "emoji": "" },
+        { "text": "예민", "emoji": "" },
+        { "text": "현우", "emoji": "" }
       ]
     }
   ]
