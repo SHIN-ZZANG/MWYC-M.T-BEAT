@@ -57,6 +57,9 @@
       btn.title = '사진 올리기';
     }
     row.querySelector('.photo-del').hidden = !file;
+    const emoji = row.querySelector('.emoji');
+    emoji.disabled = !!file;
+    emoji.title = file ? '사진이 있어 이모지는 쓰이지 않습니다. 사진을 빼면 쓸 수 있습니다.' : '';
   }
 
   photoInput.addEventListener('change', async () => {
@@ -85,7 +88,7 @@
     row.className = 'word-row';
 
     const cell = document.createElement('div');
-    cell.className = 'photo-cell photo-only';
+    cell.className = 'photo-cell';
     const pbtn = document.createElement('button');
     pbtn.type = 'button';
     pbtn.className = 'photo-btn';
@@ -172,8 +175,7 @@
   }
 
   function markDirty() { dirty = true; }
-  function updateMode() { form.classList.toggle('photo-mode', form.cardMode.value === 'photo'); }
-  form.addEventListener('input', () => { markDirty(); updateCount(); updateBpmNote(); updateMode(); });
+  form.addEventListener('input', () => { markDirty(); updateCount(); updateBpmNote(); });
 
   // ── 목록 ───────────────────────────────
   function renderList() {
@@ -202,8 +204,6 @@
     form.name.value = s.name;
     form.rounds.value = s.rounds;
     form.showLabel.checked = s.showLabel;
-    form.cardMode.value = s.cardMode;
-    updateMode();
     wordsEl.replaceChildren();
     s.words.forEach((w) => addWordRow(w));
     updateBpmNote();
@@ -234,7 +234,7 @@
     currentId = null;
     $('#formTitle').textContent = '새 세트';
     $('#deleteBtn').hidden = true;
-    fill({ name: '', rounds: 5, showLabel: true, cardMode: 'emoji',
+    fill({ name: '', rounds: 5, showLabel: true,
       words: [{ text: '', emoji: '', image: '' }, { text: '', emoji: '', image: '' }] });
     renderList();
     form.name.focus();
@@ -247,7 +247,6 @@
       name: form.name.value.trim(),
       rounds: +form.rounds.value,
       showLabel: form.showLabel.checked,
-      cardMode: form.cardMode.value,
       words: collectWords(),
     };
     try {

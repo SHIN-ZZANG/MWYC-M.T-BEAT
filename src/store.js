@@ -51,9 +51,7 @@ function sanitizeSet(s, id, fix) {
   let showLabel = s.showLabel ?? DEFAULTS.showLabel;
   if (typeof showLabel !== 'boolean') { fix('showLabel', showLabel, !!showLabel); showLabel = !!showLabel; }
 
-  let cardMode = s.cardMode ?? DEFAULTS.cardMode;
-  if (!LIMITS.cardModes.includes(cardMode)) { fix('cardMode', cardMode, DEFAULTS.cardMode); cardMode = DEFAULTS.cardMode; }
-
+  // 예전 파일의 cardMode(세트 단위 이모지/사진)는 읽지 않는다 — 단어마다 사진 > 이모지 > 글자 순으로 정해진다
   let words = (Array.isArray(s.words) ? s.words : []).map((w) => sanitizeWord(w, fix)).filter((w) => w.text);
   if (words.length > LIMITS.wordsMax) { fix('words', `${words.length}개`, `${LIMITS.wordsMax}개`); words = words.slice(0, LIMITS.wordsMax); }
   if (words.length < LIMITS.wordsMin) fix('words', `${words.length}개`, `게임 불가 (최소 ${LIMITS.wordsMin}개)`);
@@ -63,7 +61,6 @@ function sanitizeSet(s, id, fix) {
     name,
     rounds: clampInt(s.rounds, LIMITS.roundsMin, LIMITS.roundsMax, DEFAULTS.rounds, fix, 'rounds'),
     showLabel,
-    cardMode,
     words,
   };
 }
@@ -132,7 +129,7 @@ function write(data) {
 }
 
 const pick = (s) => ({
-  name: s.name, rounds: s.rounds, showLabel: s.showLabel, cardMode: s.cardMode, words: s.words,
+  name: s.name, rounds: s.rounds, showLabel: s.showLabel, words: s.words,
 });
 
 // 시작할 때 파일을 한 번 읽어 형식을 확인한다 (오류면 그대로 던짐)

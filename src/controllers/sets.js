@@ -26,8 +26,6 @@ function normalize(body) {
   if (!name) throw new HttpError(400, '세트 이름을 입력하세요.');
   if ([...name].length > LIMITS.name) throw new HttpError(400, `세트 이름은 ${LIMITS.name}자 이하로 입력하세요.`);
 
-  if (!LIMITS.cardModes.includes(body.cardMode)) throw new HttpError(400, '카드 표시 방식은 이모지 또는 사진이어야 합니다.');
-
   if (!Array.isArray(body.words)) throw new HttpError(400, '단어 목록이 없습니다.');
   const words = body.words
     .map((w) => ({
@@ -51,7 +49,6 @@ function normalize(body) {
     name,
     rounds: int(body.rounds, '라운드 수', LIMITS.roundsMin, LIMITS.roundsMax),
     showLabel: !!body.showLabel,
-    cardMode: body.cardMode,
     words,
   };
 }

@@ -62,10 +62,9 @@ kbd { border: 1px solid #ccc; border-bottom-width: 2px; border-radius: 4px; padd
 .fields-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 640px; margin-top: 6px; }
 .fields-2 .f select { max-width: 160px; }
 
-.words-head, .word-row { display: grid; grid-template-columns: 80px 1fr 36px; gap: 8px; align-items: center; }
-.photo-only { display: none; }
-.photo-mode .photo-only { display: block; }
-.photo-mode .words-head, .photo-mode .word-row { grid-template-columns: 56px 80px 1fr 36px; }
+.words-head, .word-row { display: grid; grid-template-columns: 56px 80px 1fr 36px; gap: 8px; align-items: center; }
+/* 사진이 있으면 이모지는 쓰이지 않는다 — 칸을 흐리게 막아 보여 준다 */
+.word-row .emoji:disabled { opacity: .35; background: #f1f0f5; cursor: not-allowed; }
 .guide-photo { font-size: 12px; color: #6f6c80; line-height: 1.7; background: #fff8e6; border: 1px solid #f3e2b3;
                border-radius: 6px; padding: 6px 10px; margin: 0 0 10px; }
 .photo-cell { position: relative; width: 56px; height: 56px; }

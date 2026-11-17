@@ -68,7 +68,7 @@
     store.set('setId', String(id));
     el.idleInfo.textContent =
       `「${current.name}」 · 단어 ${current.words.length}개 · ${current.rounds}라운드` +
-      (photoOn() ? ' · 사진 카드' : '');
+      (photoOn() ? ' · 사진 카드 포함' : '');
     el.start.disabled = current.words.length < 2;
     if (el.start.disabled) el.idleInfo.textContent = `「${current.name}」 세트는 단어가 2개 이상 있어야 시작할 수 있습니다. 설정에서 단어를 추가해 주세요.`;
     layoutGrid(music.cards);
@@ -85,7 +85,8 @@
   const musicOn = () => !!music.url;
 
   // ── 사진 ───────────────────────────────
-  const photoOn = () => current.cardMode === 'photo';
+  // 단어마다 사진 > 이모지 > 글자 순으로 카드 그림이 정해진다
+  const photoOn = () => current.words.some((w) => w.image);
   const mediaUrl = (file) => '/media/' + encodeURIComponent(file);
   const failedImages = new Set(); // 불러오기 실패한 사진은 이모지로 대신 보여 준다
 
@@ -102,7 +103,7 @@
 
   // ── 카드 ───────────────────────────────
   function cardFace(c, w) {
-    if (photoOn() && w.image && !failedImages.has(w.image)) {
+    if (w.image && !failedImages.has(w.image)) {
       const img = document.createElement('img');
       img.className = 'card-photo';
       img.alt = w.text;

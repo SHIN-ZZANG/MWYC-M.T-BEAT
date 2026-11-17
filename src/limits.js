@@ -2,13 +2,12 @@
 export const LIMITS = {
   name: 40,
   roundsMin: 1, roundsMax: 20, // 20라운드 × 16박 = 320박 — 곡(344박) 안에 다 들어간다
-  cardModes: ['emoji', 'photo'],
   wordsMin: 2, wordsMax: 50,
   text: 20, emoji: 16,
 };
 
 export const DEFAULTS = {
-  rounds: 5, showLabel: true, cardMode: 'emoji',
+  rounds: 5, showLabel: true,
 };
 
 // 올린 파일 이름 규칙 (서버가 만든 이름만 허용 — 경로 조작 차단)
