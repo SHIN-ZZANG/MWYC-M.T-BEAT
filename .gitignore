@@ -1,11 +1,10 @@
 node_modules/
 .env
 
-# 저장 중 생기는 임시 파일 (data/sets.json 자체는 git 으로 관리)
-data/*.tmp
+# 데이터 폴더 — 단어 세트(sets.json) · 사진(images/) · 배경음악(music/).
+# 서버의 설정 화면에서 바뀌므로 git 에 넣지 않는다 (넣으면 배포 때 git pull 이 충돌한다).
+# 처음 세팅용 기본 세트는 src/default-sets.json (서버가 시작할 때 data/sets.json 이 없으면 복사한다).
+data/
 
 .DS_Store
 Thumbs.db
-
-# 배경음악 (용량이 크고 대부분 저작권이 있는 곡이라 git 에 올리지 않는다)
-data/music/

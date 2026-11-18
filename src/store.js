@@ -154,10 +154,20 @@ const pick = (s) => ({
   name: s.name, rounds: s.rounds, showLabel: s.showLabel, plan: s.plan ?? [], words: s.words,
 });
 
-// 시작할 때 파일을 한 번 읽어 형식을 확인한다 (오류면 그대로 던짐)
+// 처음 세팅용 기본 세트 — git 으로 관리한다. 실제 데이터(data/ 폴더)는 git 에 없고 서버에서 바뀐다.
+export const EXAMPLE_FILE = path.join(ROOT_DIR, 'src', 'default-sets.json');
+
+// 시작할 때 파일을 한 번 읽어 형식을 확인한다 (오류면 그대로 던짐).
+// 데이터 파일이 없으면 기본 세트(src/default-sets.json)를 복사해 시작한다 — 있으면 절대 건드리지 않는다.
 export function checkStore() {
+  let seeded = false;
+  if (!fs.existsSync(DATA_FILE) && fs.existsSync(EXAMPLE_FILE)) {
+    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+    fs.copyFileSync(EXAMPLE_FILE, DATA_FILE, fs.constants.COPYFILE_EXCL);
+    seeded = true;
+  }
   const exists = fs.existsSync(DATA_FILE);
-  return { exists, count: read().sets.length };
+  return { exists, seeded, count: read().sets.length };
 }
 
 export function listSets() {

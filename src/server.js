@@ -188,8 +188,9 @@ server.on('error', (err) => {
 
 // 데이터 파일 형식 확인 — 깨져 있으면 원인을 남기고 시작하지 않는다
 try {
-  const { exists, count } = checkStore();
-  if (exists) log.info('데이터 파일 확인', { sets: count });
+  const { exists, seeded, count } = checkStore();
+  if (seeded) log.info('데이터 파일이 없어 기본 세트(src/default-sets.json)로 만들었습니다', { file: DATA_FILE, sets: count });
+  else if (exists) log.info('데이터 파일 확인', { sets: count });
   else log.warn('데이터 파일이 없습니다. 첫 저장 때 새로 만듭니다', { file: DATA_FILE });
 } catch (err) {
   log.error(`데이터 파일을 읽을 수 없습니다: ${err.message}`, { file: DATA_FILE });
