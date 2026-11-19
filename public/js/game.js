@@ -153,8 +153,10 @@
     el.grid.replaceChildren(...cards);
   }
 
+  // 시작 전 대기 화면 — 이름을 미리 보여 주면 스포가 되므로 물음표 카드만
   function renderPreview() {
-    renderCards(current.words.slice(0, music.cards).map((w) => ({ w, face: 'image' })));
+    const blank = { text: '', emoji: '❔', image: '' };
+    renderCards(Array.from({ length: music.cards }, () => ({ w: blank, face: 'image' })));
     cards.forEach((c) => c.classList.add('dim'));
     el.roundLabel.textContent = '';
   }
@@ -168,20 +170,24 @@
     return a;
   }
 
-  // 단어 종류는 카드 수의 절반에서 시작해 라운드마다 1개씩 늘어난다 (8장: 4 → 5 → … → 8).
-  // 횟수는 종류마다 고르게 나눠 같은 단어는 최대 2번 (단어가 모자란 세트만 그 이상).
   // 라운드 구성(plan)이 있으면 그 라운드의 종류 수 · 표시 방식을 따른다.
+  // 없으면 종류 수는 카드 수의 절반에서 시작해 라운드마다 1개씩 늘어난다 (8장: 4 → 5 → … → 8).
   // 횟수는 종류마다 가능한 한 고르게 나눈다 (8장에 3종류면 3·3·2번, 4종류 이상이면 최대 2번).
-  // 같은 단어가 바로 연달아 나오지 않게 섞는다.
-  function makeSequence(set, n, round) {
+  // 순서는 무작위 후보를 여러 개 만들어 가장 덜 뻔한 것을 고른다 (seqScore). 매 판 새로 섞으므로 같은 세트를 다시 해도 다르다.
+  function makeSequence(set, n, round, prev) {
     const step = set.plan && set.plan[round];
     const words = set.words;
     const distinct = Math.max(1, Math.min(words.length, n, step ? step.kinds : Math.ceil(n / 2) + round));
     const pool = shuffle([...words]).slice(0, distinct);
     const base = [];
     for (let i = 0; i < n; i++) base.push(pool[i % pool.length]); // 고르게 채우기
-    let seq = shuffle([...base]);
-    for (let tries = 0; tries < 300 && hasAdjacent(seq); tries++) seq = shuffle([...base]);
+    let seq = null;
+    let best = Infinity;
+    for (let tries = 0; tries < 400; tries++) {
+      const cand = shuffle([...base]);
+      const score = seqScore(cand, prev);
+      if (score < best) { best = score; seq = cand; }
+    }
 
     // 카드마다 글자로 보일지 그림으로 보일지
     const show = step ? step.show : 'image';
@@ -193,9 +199,27 @@
     return seq.map((w, i) => ({ w, face: faces[i] }));
   }
 
-  function hasAdjacent(seq) {
-    return seq.some((w, i) => i > 0 && w === seq[i - 1]);
+  // 순서 점수 — 낮을수록 덜 뻔하고 어렵다.
+  //   같은 단어 연달아(A A) 금지 · 한 칸 건너 반복(A B A) · 같은 두 단어 순서 반복(A B … A B) ·
+  //   바로 전 라운드와 같은 자리에 같은 단어 → 감점.  글자 하나가 같은 비슷한 이름끼리 이웃(윤기-윤민) → 가점.
+  function seqScore(seq, prev) {
+    let score = 0;
+    const pairs = new Set();
+    for (let i = 1; i < seq.length; i++) {
+      const a = seq[i - 1];
+      const b = seq[i];
+      if (a === b) score += 1000;
+      if (i >= 2 && seq[i - 2] === b) score += 10;
+      const pair = a.text + '\u0000' + b.text;
+      if (pairs.has(pair)) score += 6;
+      pairs.add(pair);
+      if (a !== b && similar(a.text, b.text)) score -= 2;
+    }
+    if (prev) seq.forEach((w, i) => { if (prev[i] === w) score += 3; });
+    return score;
   }
+
+  const similar = (a, b) => [...a].some((ch) => b.includes(ch));
 
   function buildTimeline(set, t0) {
     const beats = [];
@@ -205,8 +229,11 @@
     const listen = music.listenBeats; // 곡의 "음악만" 구간 — 이 동안 카드가 한 박에 한 장씩 나타난다
     const bpm = music.bpm;
     const spb = 60 / bpm;
+    let prev = null;
     for (let r = 0; r < set.rounds; r++) {
-      events.push({ t, kind: 'round', round: r, bpm, seq: makeSequence(set, n, r) });
+      const seq = makeSequence(set, n, r, prev);
+      prev = seq.map((x) => x.w);
+      events.push({ t, kind: 'round', round: r, bpm, seq });
       for (let l = 0; l < listen; l++) {
         // 듣기 박마다 카드를 한 장씩 보여 준다 (카드가 듣기 박보다 많으면 마지막 박에 나머지를 한꺼번에)
         beats.push({ t, spb, part: 'listen', n: l });
