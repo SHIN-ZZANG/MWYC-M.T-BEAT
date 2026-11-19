@@ -108,6 +108,7 @@
       img.className = 'card-photo';
       img.alt = w.text;
       img.src = mediaUrl(w.image);
+      if (w.zoom > 1) img.style.transform = `scale(${w.zoom})`; // 누끼처럼 얼굴이 작은 사진은 가운데 기준으로 키운다
       img.addEventListener('error', () => {
         failedImages.add(w.image);
         c.classList.remove('photo');

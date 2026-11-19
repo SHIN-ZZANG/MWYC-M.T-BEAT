@@ -57,9 +57,19 @@
       btn.title = '사진 올리기';
     }
     row.querySelector('.photo-del').hidden = !file;
+    const zoom = row.querySelector('.zoom');
+    zoom.disabled = !file;
+    if (!file) zoom.value = '1';
+    applyZoom(row);
     const emoji = row.querySelector('.emoji');
     emoji.disabled = !!file;
     emoji.title = file ? '사진이 있어 이모지는 쓰이지 않습니다. 사진을 빼면 쓸 수 있습니다.' : '';
+  }
+
+  // 사진 확대 — 썸네일에도 게임 카드와 같은 배율로 보여 준다
+  function applyZoom(row) {
+    const img = row.querySelector('.photo-btn img');
+    if (img) img.style.transform = `scale(${row.querySelector('.zoom').value})`;
   }
 
   photoInput.addEventListener('change', async () => {
@@ -83,7 +93,9 @@
   });
 
   // ── 단어 행 ────────────────────────────
-  function addWordRow(w = { text: '', emoji: '', image: '' }, focus = false) {
+  const ZOOMS = [1, 1.2, 1.4, 1.6, 1.8, 2];
+
+  function addWordRow(w = { text: '', emoji: '', image: '', zoom: 1 }, focus = false) {
     const row = document.createElement('div');
     row.className = 'word-row';
 
@@ -100,6 +112,13 @@
     pdel.textContent = '✕';
     pdel.addEventListener('click', () => { setRowPhoto(row, ''); markDirty(); });
     cell.append(pbtn, pdel);
+
+    const zoom = document.createElement('select');
+    zoom.className = 'zoom';
+    zoom.title = '사진 확대 — 누끼처럼 얼굴이 작은 사진을 카드에서 크게 보여 줍니다';
+    ZOOMS.forEach((z) => zoom.add(new Option(z === 1 ? '원래' : `${z}배`, String(z))));
+    zoom.value = String(ZOOMS.includes(w.zoom) ? w.zoom : 1);
+    zoom.addEventListener('change', () => applyZoom(row));
 
     const emoji = document.createElement('input');
     emoji.className = 'emoji';
@@ -125,7 +144,7 @@
         else row.nextElementSibling.querySelector('.text').focus();
       }
     });
-    row.append(cell, emoji, text, del);
+    row.append(cell, zoom, emoji, text, del);
     wordsEl.appendChild(row);
     setRowPhoto(row, w.image || '');
     updateCount();
@@ -137,6 +156,7 @@
       emoji: r.querySelector('.emoji').value.trim(),
       text: r.querySelector('.text').value.trim(),
       image: r.dataset.image || '',
+      zoom: Number(r.querySelector('.zoom').value),
     })).filter((w) => w.text || w.emoji || w.image);
   }
 

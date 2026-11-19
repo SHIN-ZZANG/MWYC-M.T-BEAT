@@ -62,7 +62,7 @@ kbd { border: 1px solid #ccc; border-bottom-width: 2px; border-radius: 4px; padd
 .fields-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 640px; margin-top: 6px; }
 .fields-2 .f select { max-width: 160px; }
 
-.words-head, .word-row { display: grid; grid-template-columns: 56px 80px 1fr 36px; gap: 8px; align-items: center; }
+.words-head, .word-row { display: grid; grid-template-columns: 56px 72px 80px 1fr 36px; gap: 8px; align-items: center; }
 /* 사진이 있으면 이모지는 쓰이지 않는다 — 칸을 흐리게 막아 보여 준다 */
 .word-row .emoji:disabled { opacity: .35; background: #f1f0f5; cursor: not-allowed; }
 .guide-photo { font-size: 12px; color: #6f6c80; line-height: 1.7; background: #fff8e6; border: 1px solid #f3e2b3;
@@ -70,7 +70,9 @@ kbd { border: 1px solid #ccc; border-bottom-width: 2px; border-radius: 4px; padd
 .photo-cell { position: relative; width: 56px; height: 56px; }
 .photo-btn { width: 56px; height: 56px; border: 1px dashed #b9b4d0; border-radius: 8px; background: #faf9ff;
              cursor: pointer; font-size: 11px; color: #8a8799; padding: 0; overflow: hidden; }
+.photo-btn { overflow: hidden; }
 .photo-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.word-row .zoom:disabled { opacity: .35; cursor: not-allowed; }
 .photo-btn.has { border-style: solid; border-color: #dcdae8; }
 .photo-btn.busy { opacity: .5; cursor: progress; }
 .photo-del { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%;

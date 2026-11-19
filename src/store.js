@@ -36,10 +36,13 @@ function sanitizeWord(w, fix) {
     text: String(w?.text ?? '').trim(),
     emoji: String(w?.emoji ?? '').trim(),
     image: String(w?.image ?? '').trim(),
+    zoom: Number(w?.zoom ?? 1),
   };
+  if (!LIMITS.zooms.includes(out.zoom)) { fix('words.zoom', `${out.text}: ${w?.zoom}`, 1); out.zoom = 1; }
   if (chars(out.text).length > LIMITS.text) { fix('words.text', out.text, cut(out.text, LIMITS.text)); out.text = cut(out.text, LIMITS.text); }
   if (chars(out.emoji).length > LIMITS.emoji) { fix('words.emoji', out.text, '(잘림)'); out.emoji = cut(out.emoji, LIMITS.emoji); }
   if (out.image && !IMAGE_NAME.test(out.image)) { fix('words.image', out.image, '(무시)'); out.image = ''; }
+  if (!out.image) out.zoom = 1; // 확대는 사진에만 쓰인다
   return out;
 }
 
@@ -127,16 +130,21 @@ function read() {
   return data;
 }
 
-// 사람이 읽기 좋게: 단어 하나는 한 줄로, 사진이 없으면 image 는 생략
+// 사람이 읽기 좋게: 단어 하나는 한 줄로, 사진이 없으면 image 는 생략, 확대(zoom)는 1 이 아닐 때만
 function format(data) {
   const out = {
     sets: data.sets.map((s) => ({
       ...s,
-      words: s.words.map((w) => (w.image ? { text: w.text, emoji: w.emoji, image: w.image } : { text: w.text, emoji: w.emoji })),
+      words: s.words.map((w) => {
+        if (!w.image) return { text: w.text, emoji: w.emoji };
+        return w.zoom && w.zoom !== 1
+          ? { text: w.text, emoji: w.emoji, image: w.image, zoom: w.zoom }
+          : { text: w.text, emoji: w.emoji, image: w.image };
+      }),
     })),
   };
   return JSON.stringify(out, null, 2)
-    .replace(/\{\n\s+("text": [^\n]*)\n((?:\s+"(?:emoji|image)": [^\n]*\n)*)\s+\}/g,
+    .replace(/\{\n\s+("text": [^\n]*)\n((?:\s+"(?:emoji|image|zoom)": [^\n]*\n)*)\s+\}/g,
       (_, first, rest) => `{ ${[first, ...rest.split('\n').map((l) => l.trim()).filter(Boolean)].join(' ')} }`)
     .replace(/\{\n\s+("kinds": [^\n]*)\n\s+("show": [^\n]*)\n\s+\}/g, '{ $1 $2 }')
     + '\n';

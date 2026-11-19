@@ -10,6 +10,8 @@ export const LIMITS = {
   //   image : 모두 그림 (사진 > 이모지 > 글자)
   kindsMin: 2, kindsMax: 8, // 최대 = 라운드 카드 수(GAME_MUSIC.cards)
   shows: ['text', 'mix', 'image'],
+  // 사진 확대 배율 — 누끼처럼 얼굴이 작게 찍힌 사진을 카드 가운데 기준으로 키운다 (1 = 원래 크기)
+  zooms: [1, 1.2, 1.4, 1.6, 1.8, 2],
 };
 
 export const DEFAULTS = {

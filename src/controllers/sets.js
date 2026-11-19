@@ -32,6 +32,7 @@ function normalize(body) {
       text: String(w?.text ?? '').trim(),
       emoji: String(w?.emoji ?? '').trim(),
       image: String(w?.image ?? '').trim(),
+      zoom: Number(w?.zoom ?? 1),
     }))
     .filter((w) => w.text || w.emoji || w.image);
 
@@ -40,6 +41,8 @@ function normalize(body) {
     if ([...w.text].length > LIMITS.text) throw new HttpError(400, `"${w.text}" — 단어는 ${LIMITS.text}자 이하로 입력하세요.`);
     if ([...w.emoji].length > LIMITS.emoji) throw new HttpError(400, `"${w.text}" 의 이모지가 너무 깁니다.`);
     if (w.image && !imageExists(w.image)) throw new HttpError(400, `"${w.text}" 의 사진 파일을 찾을 수 없습니다. 사진을 다시 올려 주세요.`);
+    if (!LIMITS.zooms.includes(w.zoom)) throw new HttpError(400, `"${w.text}" 의 사진 확대 배율이 잘못되었습니다.`);
+    if (!w.image) w.zoom = 1; // 확대는 사진에만 쓰인다
   });
 
   if (words.length < LIMITS.wordsMin) throw new HttpError(400, `단어를 ${LIMITS.wordsMin}개 이상 넣으세요.`);
