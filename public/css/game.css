@@ -163,13 +163,13 @@ body {
 
 .card.dim { opacity: .35; }                  /* 시작 전 미리보기 */
 .card.wait { visibility: hidden; }           /* 라운드 시작 — 듣기 박마다 한 장씩 나타난다 */
-.card.show { animation: cardIn .22s ease-out; }
+.card.show { animation: cardIn .12s ease-out; }    /* 박 시점에 이미 보이도록 투명도 없이 살짝 튀기만 한다 */
 .card.active {                               /* 지금 말할 카드 */
   border-color: var(--hit);
   border-width: 1.4cqmin;
   box-shadow: 0 0 0 .4cqmin rgba(227, 38, 43, .25), 0 .8cqmin 2cqmin rgba(0, 0, 0, .25);
 }
-@keyframes cardIn { from { opacity: 0; transform: scale(.6); } 70% { transform: scale(1.06); } }
+@keyframes cardIn { from { transform: scale(.9); } 50% { transform: scale(1.05); } }
 
 /* ── 시작 / 종료 패널 ── */
 .panel-overlay {

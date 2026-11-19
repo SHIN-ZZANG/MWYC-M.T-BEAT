@@ -137,8 +137,9 @@
   }
 
   // seq: [{ w: 단어, face: 'text' | 'image' }]
-  function renderCards(seq) {
-    el.grid.classList.toggle('no-label', !current.showLabel);
+  // photoOnly: 사진 라운드 — 그림 밑 이름을 설정과 상관없이 숨긴다 (얼굴만 보고 말하기)
+  function renderCards(seq, photoOnly = false) {
+    el.grid.classList.toggle('no-label', photoOnly || !current.showLabel);
     cards = seq.map(({ w, face: kind }, i) => {
       const c = document.createElement('div');
       c.className = 'card';
@@ -233,7 +234,8 @@
     for (let r = 0; r < set.rounds; r++) {
       const seq = makeSequence(set, n, r, prev);
       prev = seq.map((x) => x.w);
-      events.push({ t, kind: 'round', round: r, bpm, seq });
+      const photoOnly = !!(set.plan && set.plan[r] && set.plan[r].show === 'image');
+      events.push({ t, kind: 'round', round: r, bpm, seq, photoOnly });
       for (let l = 0; l < listen; l++) {
         // 듣기 박마다 카드를 한 장씩 보여 준다 (카드가 듣기 박보다 많으면 마지막 박에 나머지를 한꺼번에)
         beats.push({ t, spb, part: 'listen', n: l });
@@ -259,7 +261,7 @@
   function onEvent(ev) {
     switch (ev.kind) {
       case 'round':
-        renderCards(ev.seq);
+        renderCards(ev.seq, ev.photoOnly);
         cards.forEach((c) => c.classList.add('wait')); // 듣기 박마다 한 장씩 나타난다
         prevActive = null;
         el.roundLabel.textContent = `${ev.round + 1}/${current.rounds}`;

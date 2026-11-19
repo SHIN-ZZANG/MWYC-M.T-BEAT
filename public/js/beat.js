@@ -111,6 +111,7 @@
     let ei = 0;
     let stopped = false;
     const LOOKAHEAD = 0.15;
+    const FRAME = 1 / 60;
 
     const timer = setInterval(() => {
       while (bi < beats.length && beats[bi].t < ctx.currentTime + LOOKAHEAD) {
@@ -120,8 +121,9 @@
 
     function frame() {
       if (stopped) return;
-      // 소리는 출력 지연만큼 늦게 들리므로 화면도 그만큼 늦춘다
-      const now = ctx.currentTime - (ctx.outputLatency || ctx.baseLatency || 0);
+      // 소리는 출력 지연만큼 늦게 들리므로 화면도 그만큼 늦춘다.
+      // 바꾼 화면은 다음 프레임에야 그려지므로 한 프레임(FRAME) 먼저 처리해 그 지연을 상쇄한다.
+      const now = ctx.currentTime - (ctx.outputLatency || ctx.baseLatency || 0) + FRAME;
       while (ei < events.length && events[ei].t <= now) onEvent(events[ei++]);
       if (ei < events.length) requestAnimationFrame(frame);
       else clearInterval(timer);
