@@ -175,7 +175,7 @@
   }
 
   // ── 라운드 구성 ────────────────────────
-  // 라운드마다 { kinds: 나올 단어 종류 수, show: 'text' | 'mix' | 'image' }. 끄면 빈 배열(자동).
+  // 라운드마다 { kinds: 나올 단어 종류 수, show: 'text' | 'mix' | 'image' }. 표는 항상 라운드 수만큼 있다.
   const planBody = $('#planBody');
   const SHOWS = [['text', '단어'], ['mix', '섞기'], ['image', '사진']];
 
@@ -210,7 +210,7 @@
   // 라운드 수가 바뀌면 줄 수를 맞춘다 (늘어나면 마지막 줄을 복사)
   function syncPlanRows() {
     const n = Number(form.rounds.value);
-    if (!Number.isInteger(n) || n < 1 || n > 20 || !planBody.rows.length) return; // 비어 있으면 켤 때 추천으로 채운다
+    if (!Number.isInteger(n) || n < 1 || n > 20) return;
     while (planBody.rows.length < n) {
       const last = readPlan().at(-1) || { kinds: 3, show: 'text' };
       planBody.appendChild(planRow(last));
@@ -231,46 +231,43 @@
     }));
   }
 
+  // 구성 없이 저장된 옛 세트 — 게임의 예전 자동 규칙과 같은 값(단어 수 4 → 5 → …, 모두 사진)으로 채워 보여 준다
+  function autoPlan(n, wordCount) {
+    const maxK = Math.max(2, Math.min(8, wordCount));
+    return Array.from({ length: n }, (_, i) => ({ kinds: Math.min(maxK, 4 + i), show: 'image' }));
+  }
+
   function setPlan(plan) {
     planBody.replaceChildren(...plan.map(planRow));
     syncPlanRows();
   }
 
-  function setPlanOn(on) {
-    form.planOn.checked = on;
-    $('#planArea').hidden = !on;
-  }
-
   function fillRecommended() {
     const n = Number(form.rounds.value) || 1;
     setPlan(recommendedPlan(n, collectWords().filter((w) => w.text).length));
-    setPlanOn(true);
     markDirty();
   }
 
   function updatePlanWarn() {
     const warn = $('#planWarn');
     const msgs = [];
-    if (form.planOn.checked) {
-      const words = collectWords().filter((w) => w.text);
-      readPlan().forEach((p, i) => {
-        if (p.kinds > words.length) msgs.push(`${i + 1}라운드 — 단어 수(${p.kinds})가 넣은 단어(${words.length}개)보다 많습니다.`);
-      });
-      if (readPlan().some((p) => p.show !== 'text')) {
-        const bare = words.filter((w) => !w.image && !w.emoji).map((w) => w.text);
-        const emojiOnly = words.filter((w) => !w.image && w.emoji).map((w) => w.text);
-        if (bare.length) msgs.push(`사진 · 이모지가 없어 사진 라운드에서도 글자로 나오는 단어: ${bare.join(', ')}`);
-        if (emojiOnly.length) msgs.push(`사진이 없어 이모지로 나오는 단어: ${emojiOnly.join(', ')}`);
-      }
+    const words = collectWords().filter((w) => w.text);
+    // 단어 수 입력 상한 = 넣은 단어 수 (카드 8장이 최대)
+    const maxK = Math.max(2, Math.min(8, words.length));
+    planBody.querySelectorAll('.kinds').forEach((el) => { el.max = maxK; });
+    readPlan().forEach((p, i) => {
+      if (p.kinds > words.length) msgs.push(`${i + 1}라운드 — 단어 수(${p.kinds})가 넣은 단어(${words.length}개)보다 많습니다.`);
+    });
+    if (readPlan().some((p) => p.show !== 'text')) {
+      const bare = words.filter((w) => !w.image && !w.emoji).map((w) => w.text);
+      const emojiOnly = words.filter((w) => !w.image && w.emoji).map((w) => w.text);
+      if (bare.length) msgs.push(`사진 · 이모지가 없어 사진 라운드에서도 글자로 나오는 단어: ${bare.join(', ')}`);
+      if (emojiOnly.length) msgs.push(`사진이 없어 이모지로 나오는 단어: ${emojiOnly.join(', ')}`);
     }
     warn.textContent = msgs.join('\n');
     warn.hidden = !msgs.length;
   }
 
-  form.planOn.addEventListener('change', () => {
-    if (form.planOn.checked && !planBody.rows.length) fillRecommended();
-    setPlanOn(form.planOn.checked);
-  });
   $('#planFillBtn').addEventListener('click', fillRecommended);
 
   function markDirty() { dirty = true; updatePlanWarn(); }
@@ -308,8 +305,10 @@
     form.showLabel.checked = s.showLabel;
     wordsEl.replaceChildren();
     s.words.forEach((w) => addWordRow(w));
-    setPlan(s.plan || []);
-    setPlanOn(!!(s.plan && s.plan.length));
+    // 구성이 없으면 — 옛 세트는 예전 자동 규칙대로, 새 세트(단어 없음)는 추천 구성으로 채운다
+    const wordCount = s.words.filter((w) => w.text).length;
+    setPlan(s.plan && s.plan.length ? s.plan
+      : wordCount ? autoPlan(s.rounds, wordCount) : recommendedPlan(s.rounds, 5));
     updateBpmNote();
     updatePlanWarn();
     dirty = false;
@@ -352,7 +351,7 @@
       name: form.name.value.trim(),
       rounds: +form.rounds.value,
       showLabel: form.showLabel.checked,
-      plan: form.planOn.checked ? readPlan() : [],
+      plan: readPlan(),
       words: collectWords(),
     };
     try {

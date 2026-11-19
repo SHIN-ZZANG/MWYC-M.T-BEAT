@@ -57,11 +57,9 @@ function normalize(body) {
   };
 }
 
-// 라운드 구성: 빈 배열이면 자동. 직접 정하면 라운드 수만큼 줄이 있어야 한다.
+// 라운드 구성: 라운드 수만큼 줄이 있어야 한다 (라운드마다 단어 수 · 카드 표시)
 function normalizePlan(plan, rounds, wordCount) {
-  if (plan === undefined || plan === null) return [];
   if (!Array.isArray(plan)) throw new HttpError(400, '라운드 구성 형식이 잘못되었습니다.');
-  if (!plan.length) return [];
   if (plan.length !== rounds) throw new HttpError(400, `라운드 구성이 ${plan.length}줄입니다. 라운드 수(${rounds})와 같아야 합니다.`);
   return plan.map((p, i) => {
     const kinds = int(p?.kinds, `${i + 1}라운드 단어 수`, LIMITS.kindsMin, LIMITS.kindsMax);
