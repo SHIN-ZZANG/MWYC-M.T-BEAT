@@ -191,13 +191,25 @@ body {
 .hint { color: var(--stage-muted); font-size: 12px; margin-top: 14px; opacity: .8; }
 .panel .btn.primary { background: var(--hit); border-color: var(--hit); }
 
+.play-ctrls { position: absolute; right: 2cqmin; bottom: 2cqmin; z-index: 3; display: flex; gap: 6px; }
+.play-ctrls[hidden] { display: none; }
 .stop-btn {
-  position: absolute; right: 2cqmin; bottom: 2cqmin; z-index: 2;
   background: rgba(0, 0, 0, .55); color: #fff; border: 1px solid rgba(255, 255, 255, .25);
   border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; opacity: .5;
 }
 .stop-btn:hover { opacity: 1; }
 .stop-btn[hidden] { display: none; }
+
+/* ── 일시정지 · 다시 시작 카운트다운 ── */
+.panel[hidden] { display: none; }
+.pause-overlay-counting { backdrop-filter: none; background: rgba(239, 237, 232, .35); }
+.count-num {
+  font-size: max(80px, 30cqmin); font-weight: 800; color: var(--hit);
+  text-shadow: 0 1cqmin 3cqmin rgba(0, 0, 0, .2);
+  animation: countIn .5s ease-out;
+}
+.count-num[hidden] { display: none; }
+@keyframes countIn { from { transform: scale(1.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 @media (max-width: 600px) {
   .logo { width: 100%; }

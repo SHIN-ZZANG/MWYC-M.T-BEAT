@@ -11,6 +11,8 @@
     idle: $('#idleOverlay'), idleInfo: $('#idleSetInfo'),
     end: $('#endOverlay'), endInfo: $('#endInfo'),
     start: $('#startBtn'), again: $('#againBtn'), stop: $('#stopBtn'),
+    ctrls: $('#playCtrls'), pause: $('#pauseBtn'), resume: $('#resumeBtn'),
+    pauseOverlay: $('#pauseOverlay'), pausePanel: $('#pausePanel'), countNum: $('#countNum'),
     volume: $('#volume'), fullscreen: $('#fullscreenBtn'),
   };
 
@@ -310,7 +312,7 @@
     Beat.setVolume(el.volume.value / 100);
     el.idle.hidden = true;
     el.end.hidden = true;
-    el.stop.hidden = false;
+    el.ctrls.hidden = false;
     el.setSelect.disabled = true;
     const now = Beat.now() + 0.15;
     if (buffer) {
@@ -330,7 +332,9 @@
     // 끝까지 간 경우에는 마무리 소리(심벌 · 음악 페이드아웃)가 끝까지 울리게 끊지 않는다
     if (stopFn && !cleared) stopFn();
     stopFn = null;
-    el.stop.hidden = true;
+    clearPause();
+    Beat.resume(); // 멈춘 채 정지했으면 오디오 시계를 다시 돌려 둔다 (끊긴 소리는 다시 나지 않음)
+    el.ctrls.hidden = true;
     el.setSelect.disabled = false;
     if (cleared) {
       el.endInfo.textContent = `「${current.name}」 ${current.rounds}라운드`;
@@ -345,11 +349,77 @@
   el.again.addEventListener('click', start);
   el.stop.addEventListener('click', () => finish(false));
 
+  // ── 일시정지 ───────────────────────────
+  // paused: 멈춤 화면 / counting: 3·2·1 세는 중 (아직 멈춘 상태). 둘 다 오디오 시계는 멈춰 있다.
+  let paused = false;
+  let countTimer = null;
+  const COUNT_MS = 700;
+
+  function pause() {
+    if (!stopFn || paused) return;
+    paused = true;
+    Beat.pause();
+    showPausePanel();
+    el.pause.textContent = '▶ 계속';
+  }
+
+  function showPausePanel() {
+    clearTimeout(countTimer);
+    countTimer = null;
+    el.countNum.hidden = true;
+    el.pausePanel.hidden = false;
+    el.pauseOverlay.classList.remove('pause-overlay-counting');
+    el.pauseOverlay.hidden = false;
+  }
+
+  // 3·2·1 을 보여 준 뒤 멈춘 자리부터 이어 간다
+  function resume() {
+    if (!paused || countTimer) return;
+    el.pausePanel.hidden = true;
+    el.pauseOverlay.classList.add('pause-overlay-counting');
+    let n = 3;
+    const tick = () => {
+      if (n === 0) {
+        countTimer = null;
+        clearPause();
+        Beat.resume();
+        return;
+      }
+      el.countNum.textContent = String(n);
+      el.countNum.hidden = false;
+      // 같은 요소에 애니메이션을 다시 걸기 위해 한 번 떼었다 붙인다
+      el.countNum.style.animation = 'none';
+      void el.countNum.offsetWidth;
+      el.countNum.style.animation = '';
+      n -= 1;
+      countTimer = setTimeout(tick, COUNT_MS);
+    };
+    tick();
+  }
+
+  // 일시정지 화면을 닫는다 (오디오 시계는 건드리지 않음)
+  function clearPause() {
+    clearTimeout(countTimer);
+    countTimer = null;
+    paused = false;
+    el.pauseOverlay.hidden = true;
+    el.countNum.hidden = true;
+    el.pausePanel.hidden = false;
+    el.pause.textContent = '⏸ 일시정지';
+  }
+
+  el.pause.addEventListener('click', () => {
+    if (!paused) pause();
+    else if (countTimer) showPausePanel(); // 세는 중에 누르면 다시 멈춤 화면
+    else resume();
+  });
+  el.resume.addEventListener('click', resume);
+
   document.addEventListener('keydown', (e) => {
     if (e.code !== 'Space' || e.target.closest('input, select, textarea')) return;
     e.preventDefault(); // 포커스된 버튼이 한 번 더 눌리지 않게
     e.target.blur?.();
-    if (stopFn) finish(false);
+    if (stopFn) el.pause.click();
     else if (current) start();
   });
 

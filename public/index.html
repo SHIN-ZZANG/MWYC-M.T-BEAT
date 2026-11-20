@@ -55,7 +55,7 @@
           <h2>비트에 맞춰 말해요!</h2>
           <p id="idleSetInfo" class="muted"></p>
           <button type="button" id="startBtn" class="btn big primary">▶ 시작</button>
-          <p class="hint">Space = 시작 / 정지</p>
+          <p class="hint">Space = 시작 / 일시정지</p>
         </div>
       </div>
 
@@ -68,7 +68,20 @@
         </div>
       </div>
 
-      <button type="button" id="stopBtn" class="stop-btn" hidden>■ 정지</button>
+      <div id="pauseOverlay" class="panel-overlay" hidden>
+        <div id="pausePanel" class="panel">
+          <div class="panel-emoji">⏸</div>
+          <h2>일시정지</h2>
+          <button type="button" id="resumeBtn" class="btn big primary">▶ 계속</button>
+          <p class="hint">Space = 계속 · 3·2·1 뒤에 멈춘 곳부터 이어집니다</p>
+        </div>
+        <div id="countNum" class="count-num" hidden></div>
+      </div>
+
+      <div id="playCtrls" class="play-ctrls" hidden>
+        <button type="button" id="pauseBtn" class="stop-btn">⏸ 일시정지</button>
+        <button type="button" id="stopBtn" class="stop-btn">■ 정지</button>
+      </div>
     </section>
   </main>
 

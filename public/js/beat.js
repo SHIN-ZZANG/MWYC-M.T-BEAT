@@ -190,6 +190,10 @@
     playBuffer: (...a) => { ensure(); return playBuffer(...a); },
     blip: (t, freq, level) => { ensure(); blip(t, freq, level); },
     stopAll,
+    // 일시정지 — 오디오 시계 자체를 멈춘다. 예약된 소리 · 음악 · 화면 이벤트가 모두 이 시계를 따르므로
+    // 함께 멈췄다가 멈춘 자리에서 그대로 이어진다.
+    pause() { if (ctx && ctx.state === 'running') return ctx.suspend(); return Promise.resolve(); },
+    resume() { if (ctx && ctx.state === 'suspended') return ctx.resume(); return Promise.resolve(); },
     setVolume(v) {
       volume = v;
       if (master) master.gain.value = v;
