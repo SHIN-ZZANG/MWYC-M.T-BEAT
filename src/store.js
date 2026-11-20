@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { ROOT_DIR } from './paths.js';
 import { HttpError } from './http-util.js';
-import { LIMITS, DEFAULTS, IMAGE_NAME } from './limits.js';
+import { LIMITS, DEFAULTS, IMAGE_NAME, GAME_MUSIC } from './limits.js';
 import { log } from './logger.js';
 
 export const DATA_FILE = path.resolve(ROOT_DIR, process.env.DATA_FILE || 'data/sets.json');
@@ -46,17 +46,36 @@ function sanitizeWord(w, fix) {
   return out;
 }
 
-// 라운드 구성: 비어 있으면 자동(종류 수가 라운드마다 늘고 카드는 사진 > 이모지 > 글자).
-// 있으면 라운드 수와 길이를 맞춘다 (모자라면 마지막 줄을 되풀이, 넘치면 자른다).
-function sanitizePlan(plan, rounds, fix) {
-  if (plan === undefined || plan === null) return [];
-  if (!Array.isArray(plan)) { fix('plan', plan, []); return []; }
-  if (!plan.length) return [];
+// 라운드 구성 — 라운드 수와 길이를 맞춘다 (모자라면 마지막 줄을 되풀이, 넘치면 자른다).
+// 예전 형식은 게임에 나오는 모습이 같도록 조용히 바꾼다 (다음 저장 때 새 형식으로 기록된다):
+//   구성 없음 → 단어 수 4 → 5 → …, 이름 표시가 켜져 있었으면 사진+단어, 꺼져 있었으면 사진만
+//   image(사진) → 섞기 0/0/8 · mix(카드 절반 글자) → 섞기 4/4/0(이름 표시 켜짐) 또는 4/0/4
+function sanitizePlan(plan, rounds, wordCount, oldLabel, fix) {
+  const cards = GAME_MUSIC.cards;
+  const half = Math.ceil(cards / 2);
+  const photoOnly = { text: 0, both: 0, image: cards };
+  if (plan !== undefined && plan !== null && !Array.isArray(plan)) { fix('plan', plan, '(자동 구성)'); plan = []; }
+  if (!plan || !plan.length) {
+    const maxK = Math.max(LIMITS.kindsMin, Math.min(LIMITS.kindsMax, wordCount));
+    return Array.from({ length: rounds }, (_, i) => (oldLabel
+      ? { kinds: Math.min(maxK, half + i), show: 'both' }
+      : { kinds: Math.min(maxK, half + i), show: 'mix', mix: { ...photoOnly } }));
+  }
   const out = plan.slice(0, rounds).map((p, i) => {
     const kinds = clampInt(p?.kinds, LIMITS.kindsMin, LIMITS.kindsMax, LIMITS.kindsMin, fix, `plan[${i}].kinds`);
-    let show = p?.show;
-    if (!LIMITS.shows.includes(show)) { fix(`plan[${i}].show`, show, 'image'); show = 'image'; }
-    return { kinds, show };
+    const show = p?.show;
+    if (show === 'text' || show === 'both') return { kinds, show };
+    if (show === 'image') return { kinds, show: 'mix', mix: { ...photoOnly } };
+    if (show === 'mix') {
+      if (!p.mix) return { kinds, show, mix: oldLabel ? { text: half, both: cards - half, image: 0 } : { text: half, both: 0, image: cards - half } };
+      const mix = Object.fromEntries(LIMITS.mixParts.map((k) => [k, Number(p.mix[k])]));
+      const ok = LIMITS.mixParts.every((k) => Number.isInteger(mix[k]) && mix[k] >= 0)
+        && LIMITS.mixParts.reduce((a, k) => a + mix[k], 0) === cards;
+      if (!ok) { fix(`plan[${i}].mix`, JSON.stringify(p.mix), `0/0/${cards} (사진만)`); return { kinds, show, mix: { ...photoOnly } }; }
+      return { kinds, show, mix };
+    }
+    fix(`plan[${i}].show`, show, 'both');
+    return { kinds, show: 'both' };
   });
   if (plan.length !== rounds) fix('plan', `${plan.length}줄`, `${rounds}줄 (라운드 수에 맞춤)`);
   while (out.length < rounds) out.push({ ...out[out.length - 1] });
@@ -68,22 +87,21 @@ function sanitizeSet(s, id, fix) {
   if (!name) { name = `세트 ${id}`; fix('name', s.name, name); }
   if (chars(name).length > LIMITS.name) { name = cut(name, LIMITS.name); fix('name', '(너무 김)', name); }
 
-  let showLabel = s.showLabel ?? DEFAULTS.showLabel;
-  if (typeof showLabel !== 'boolean') { fix('showLabel', showLabel, !!showLabel); showLabel = !!showLabel; }
+  // 예전 파일의 showLabel(사진 밑 이름 표시)은 라운드 구성으로 옮겨진다 — 섞기 장수 · 사진+단어
+  const oldLabel = s.showLabel ?? true;
 
   // 예전 파일의 cardMode(세트 단위 이모지/사진)는 읽지 않는다 — 단어마다 사진 > 이모지 > 글자 순으로 정해진다
 
   const rounds = clampInt(s.rounds, LIMITS.roundsMin, LIMITS.roundsMax, DEFAULTS.rounds, fix, 'rounds');
-  const plan = sanitizePlan(s.plan, rounds, fix);
   let words = (Array.isArray(s.words) ? s.words : []).map((w) => sanitizeWord(w, fix)).filter((w) => w.text);
   if (words.length > LIMITS.wordsMax) { fix('words', `${words.length}개`, `${LIMITS.wordsMax}개`); words = words.slice(0, LIMITS.wordsMax); }
   if (words.length < LIMITS.wordsMin) fix('words', `${words.length}개`, `게임 불가 (최소 ${LIMITS.wordsMin}개)`);
+  const plan = sanitizePlan(s.plan, rounds, words.length, !!oldLabel, fix);
 
   return {
     id,
     name,
     rounds,
-    showLabel,
     plan,
     words,
   };
@@ -146,7 +164,8 @@ function format(data) {
   return JSON.stringify(out, null, 2)
     .replace(/\{\n\s+("text": [^\n]*)\n((?:\s+"(?:emoji|image|zoom)": [^\n]*\n)*)\s+\}/g,
       (_, first, rest) => `{ ${[first, ...rest.split('\n').map((l) => l.trim()).filter(Boolean)].join(' ')} }`)
-    .replace(/\{\n\s+("kinds": [^\n]*)\n\s+("show": [^\n]*)\n\s+\}/g, '{ $1 $2 }')
+    .replace(/\{\n\s+("kinds": [^\n]*)\n\s+("show": [^\n]*)\n(?:\s+"mix": \{\n\s+("text": [^\n]*)\n\s+("both": [^\n]*)\n\s+("image": [^\n]*)\n\s+\}\n)?\s+\}/g,
+      (_, k, sh, t, b, im) => (t ? `{ ${k} ${sh} "mix": { ${t} ${b} ${im} } }` : `{ ${k} ${sh} }`))
     + '\n';
 }
 
@@ -159,7 +178,7 @@ function write(data) {
 }
 
 const pick = (s) => ({
-  name: s.name, rounds: s.rounds, showLabel: s.showLabel, plan: s.plan ?? [], words: s.words,
+  name: s.name, rounds: s.rounds, plan: s.plan ?? [], words: s.words,
 });
 
 // 처음 세팅용 기본 세트 — git 으로 관리한다. 실제 데이터(data/ 폴더)는 git 에 없고 서버에서 바뀐다.

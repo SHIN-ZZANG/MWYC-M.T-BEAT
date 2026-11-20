@@ -2,7 +2,7 @@
 import * as db from '../store.js';
 import { HttpError, sendJson, readJson } from '../http-util.js';
 import { log } from '../logger.js';
-import { LIMITS } from '../limits.js';
+import { LIMITS, GAME_MUSIC } from '../limits.js';
 import { imageExists, cleanupImages } from '../media.js';
 
 // 세트 저장 · 삭제 뒤 어느 세트에서도 쓰지 않는 사진 정리
@@ -55,7 +55,6 @@ function normalize(body) {
     name,
     rounds,
     plan,
-    showLabel: !!body.showLabel,
     words,
   };
 }
@@ -67,8 +66,16 @@ function normalizePlan(plan, rounds, wordCount) {
   return plan.map((p, i) => {
     const kinds = int(p?.kinds, `${i + 1}라운드 단어 수`, LIMITS.kindsMin, LIMITS.kindsMax);
     if (kinds > wordCount) throw new HttpError(400, `${i + 1}라운드 단어 수(${kinds})가 넣은 단어 수(${wordCount})보다 많습니다.`);
-    if (!LIMITS.shows.includes(p?.show)) throw new HttpError(400, `${i + 1}라운드 카드 표시는 단어 · 섞기 · 사진 중 하나여야 합니다.`);
-    return { kinds, show: p.show };
+    if (!LIMITS.shows.includes(p?.show)) throw new HttpError(400, `${i + 1}라운드 카드 표시는 단어 · 사진+단어 · 섞기 중 하나여야 합니다.`);
+    if (p.show !== 'mix') return { kinds, show: p.show };
+    // 섞기: 글자 / 사진+단어 / 사진 장수 — 합이 카드 수와 같아야 한다
+    const mix = Object.fromEntries(LIMITS.mixParts.map((k) => [k, Number(p.mix?.[k])]));
+    if (!LIMITS.mixParts.every((k) => Number.isInteger(mix[k]) && mix[k] >= 0)) {
+      throw new HttpError(400, `${i + 1}라운드 섞기 장수는 0 이상의 정수여야 합니다.`);
+    }
+    const sum = LIMITS.mixParts.reduce((a, k) => a + mix[k], 0);
+    if (sum !== GAME_MUSIC.cards) throw new HttpError(400, `${i + 1}라운드 섞기 장수 합이 ${sum}장입니다. ${GAME_MUSIC.cards}장이어야 합니다.`);
+    return { kinds, show: 'mix', mix };
   });
 }
 

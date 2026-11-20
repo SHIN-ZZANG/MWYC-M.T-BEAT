@@ -137,13 +137,13 @@
     return e;
   }
 
-  // seq: [{ w: 단어, face: 'text' | 'image' }]
-  // photoOnly: 사진 라운드 — 그림 밑 이름을 설정과 상관없이 숨긴다 (얼굴만 보고 말하기)
-  function renderCards(seq, photoOnly = false) {
-    el.grid.classList.toggle('no-label', photoOnly || !current.showLabel);
+  // seq: [{ w: 단어, face: 'text' | 'both' | 'image' }]
+  //   text = 글자만 크게 · both = 그림(사진 > 이모지 > 글자) + 밑에 이름 · image = 그림만 (얼굴만 보고 말하기)
+  function renderCards(seq) {
     cards = seq.map(({ w, face: kind }, i) => {
       const c = document.createElement('div');
       c.className = 'card';
+      if (kind === 'image') c.classList.add('no-label');
       c.style.setProperty('--i', i);
       const face = kind === 'text' ? textEl(c, w) : cardFace(c, w);
       const t = document.createElement('div');
@@ -191,12 +191,14 @@
       if (score < best) { best = score; seq = cand; }
     }
 
-    // 카드마다 글자로 보일지 그림으로 보일지
-    const show = step ? step.show : 'image';
-    const faces = seq.map(() => (show === 'text' ? 'text' : 'image'));
-    if (show === 'mix') {
+    // 카드마다 보이는 모습 — 섞기는 정한 장수만큼 글자 / 사진+이름 / 사진을 무작위 자리에 둔다
+    const show = step ? step.show : 'both';
+    const faces = seq.map(() => (show === 'text' ? 'text' : show === 'both' ? 'both' : 'image'));
+    if (show === 'mix' && step.mix) {
       const idx = shuffle(seq.map((_, i) => i));
-      idx.slice(0, Math.ceil(n / 2)).forEach((i) => { faces[i] = 'text'; });
+      const nText = step.mix.text || 0;
+      const nBoth = step.mix.both || 0;
+      idx.forEach((i, k) => { faces[i] = k < nText ? 'text' : k < nText + nBoth ? 'both' : 'image'; });
     }
     return seq.map((w, i) => ({ w, face: faces[i] }));
   }
@@ -235,8 +237,7 @@
     for (let r = 0; r < set.rounds; r++) {
       const seq = makeSequence(set, n, r, prev);
       prev = seq.map((x) => x.w);
-      const photoOnly = !!(set.plan && set.plan[r] && set.plan[r].show === 'image');
-      events.push({ t, kind: 'round', round: r, bpm, seq, photoOnly });
+      events.push({ t, kind: 'round', round: r, bpm, seq });
       for (let l = 0; l < listen; l++) {
         // 듣기 박마다 카드를 한 장씩 보여 준다 (카드가 듣기 박보다 많으면 마지막 박에 나머지를 한꺼번에)
         beats.push({ t, spb, part: 'listen', n: l });
@@ -262,7 +263,7 @@
   function onEvent(ev) {
     switch (ev.kind) {
       case 'round':
-        renderCards(ev.seq, ev.photoOnly);
+        renderCards(ev.seq);
         cards.forEach((c) => c.classList.add('wait')); // 듣기 박마다 한 장씩 나타난다
         prevActive = null;
         el.roundLabel.textContent = `${ev.round + 1}/${current.rounds}`;

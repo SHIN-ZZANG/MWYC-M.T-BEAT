@@ -4,8 +4,13 @@
       "id": 1,
       "name": "123",
       "rounds": 5,
-      "showLabel": true,
-      "plan": [],
+      "plan": [
+        { "kinds": 4, "show": "both" },
+        { "kinds": 5, "show": "both" },
+        { "kinds": 6, "show": "both" },
+        { "kinds": 6, "show": "both" },
+        { "kinds": 6, "show": "both" }
+      ],
       "words": [
         { "text": "고양이", "emoji": "🐱" },
         { "text": "강아지", "emoji": "🐶" },
@@ -19,8 +24,13 @@
       "id": 2,
       "name": "과일",
       "rounds": 5,
-      "showLabel": true,
-      "plan": [],
+      "plan": [
+        { "kinds": 4, "show": "both" },
+        { "kinds": 5, "show": "both" },
+        { "kinds": 6, "show": "both" },
+        { "kinds": 6, "show": "both" },
+        { "kinds": 6, "show": "both" }
+      ],
       "words": [
         { "text": "사과", "emoji": "🍎" },
         { "text": "바나나", "emoji": "🍌" },
@@ -34,8 +44,14 @@
       "id": 3,
       "name": "한 글자 (헷갈림 주의)",
       "rounds": 6,
-      "showLabel": true,
-      "plan": [],
+      "plan": [
+        { "kinds": 4, "show": "both" },
+        { "kinds": 5, "show": "both" },
+        { "kinds": 6, "show": "both" },
+        { "kinds": 7, "show": "both" },
+        { "kinds": 8, "show": "both" },
+        { "kinds": 8, "show": "both" }
+      ],
       "words": [
         { "text": "곰", "emoji": "🐻" },
         { "text": "공", "emoji": "⚽" },
@@ -51,15 +67,14 @@
       "id": 4,
       "name": "테마 1",
       "rounds": 7,
-      "showLabel": false,
       "plan": [
         { "kinds": 3, "show": "text" },
         { "kinds": 4, "show": "text" },
         { "kinds": 5, "show": "text" },
-        { "kinds": 5, "show": "mix" },
-        { "kinds": 5, "show": "mix" },
-        { "kinds": 5, "show": "image" },
-        { "kinds": 5, "show": "image" }
+        { "kinds": 5, "show": "mix", "mix": { "text": 4, "both": 0, "image": 4 } },
+        { "kinds": 5, "show": "mix", "mix": { "text": 4, "both": 0, "image": 4 } },
+        { "kinds": 5, "show": "mix", "mix": { "text": 0, "both": 0, "image": 8 } },
+        { "kinds": 5, "show": "mix", "mix": { "text": 0, "both": 0, "image": 8 } }
       ],
       "words": [
         { "text": "윤기", "emoji": "" },
@@ -73,15 +88,14 @@
       "id": 5,
       "name": "테마 2",
       "rounds": 7,
-      "showLabel": false,
       "plan": [
         { "kinds": 3, "show": "text" },
         { "kinds": 4, "show": "text" },
         { "kinds": 5, "show": "text" },
-        { "kinds": 5, "show": "mix" },
-        { "kinds": 5, "show": "mix" },
-        { "kinds": 5, "show": "image" },
-        { "kinds": 5, "show": "image" }
+        { "kinds": 5, "show": "mix", "mix": { "text": 4, "both": 0, "image": 4 } },
+        { "kinds": 5, "show": "mix", "mix": { "text": 4, "both": 0, "image": 4 } },
+        { "kinds": 5, "show": "mix", "mix": { "text": 0, "both": 0, "image": 8 } },
+        { "kinds": 5, "show": "mix", "mix": { "text": 0, "both": 0, "image": 8 } }
       ],
       "words": [
         { "text": "선민", "emoji": "" },
@@ -95,15 +109,14 @@
       "id": 6,
       "name": "테마 3",
       "rounds": 7,
-      "showLabel": false,
       "plan": [
         { "kinds": 3, "show": "text" },
         { "kinds": 4, "show": "text" },
         { "kinds": 5, "show": "text" },
-        { "kinds": 5, "show": "mix" },
-        { "kinds": 5, "show": "mix" },
-        { "kinds": 5, "show": "image" },
-        { "kinds": 5, "show": "image" }
+        { "kinds": 5, "show": "mix", "mix": { "text": 4, "both": 0, "image": 4 } },
+        { "kinds": 5, "show": "mix", "mix": { "text": 4, "both": 0, "image": 4 } },
+        { "kinds": 5, "show": "mix", "mix": { "text": 0, "both": 0, "image": 8 } },
+        { "kinds": 5, "show": "mix", "mix": { "text": 0, "both": 0, "image": 8 } }
       ],
       "words": [
         { "text": "채연", "emoji": "" },
@@ -117,15 +130,14 @@
       "id": 7,
       "name": "테마 4",
       "rounds": 7,
-      "showLabel": false,
       "plan": [
         { "kinds": 3, "show": "text" },
         { "kinds": 4, "show": "text" },
         { "kinds": 5, "show": "text" },
-        { "kinds": 5, "show": "mix" },
-        { "kinds": 5, "show": "mix" },
-        { "kinds": 5, "show": "image" },
-        { "kinds": 5, "show": "image" }
+        { "kinds": 5, "show": "mix", "mix": { "text": 4, "both": 0, "image": 4 } },
+        { "kinds": 5, "show": "mix", "mix": { "text": 4, "both": 0, "image": 4 } },
+        { "kinds": 5, "show": "mix", "mix": { "text": 0, "both": 0, "image": 8 } },
+        { "kinds": 5, "show": "mix", "mix": { "text": 0, "both": 0, "image": 8 } }
       ],
       "words": [
         { "text": "예린", "emoji": "" },

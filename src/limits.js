@@ -5,17 +5,18 @@ export const LIMITS = {
   wordsMin: 2, wordsMax: 50,
   text: 20, emoji: 16,
   // 라운드 구성(plan) — 라운드마다 나올 단어 종류 수와 카드 표시 방식
-  //   text  : 글자만 (사진 · 이모지 무시)
-  //   mix   : 카드 절반쯤은 그림(사진 > 이모지), 나머지는 글자
-  //   image : 모두 그림 (사진 > 이모지 > 글자)
+  //   text : 모두 글자 (사진 · 이모지 무시)
+  //   both : 모두 그림(사진 > 이모지 > 글자) + 밑에 이름
+  //   mix  : 장수를 직접 정한다 — mix: { text: 글자, both: 그림+이름, image: 그림만 } (합 = 카드 수)
   kindsMin: 2, kindsMax: 8, // 최대 = 라운드 카드 수(GAME_MUSIC.cards)
-  shows: ['text', 'mix', 'image'],
+  shows: ['text', 'both', 'mix'],
+  mixParts: ['text', 'both', 'image'],
   // 사진 확대 배율 — 누끼처럼 얼굴이 작게 찍힌 사진을 카드 가운데 기준으로 키운다 (1 = 원래 크기)
   zooms: [1, 1.2, 1.4, 1.6, 1.8, 2],
 };
 
 export const DEFAULTS = {
-  rounds: 5, showLabel: true,
+  rounds: 5,
 };
 
 // 올린 파일 이름 규칙 (서버가 만든 이름만 허용 — 경로 조작 차단)

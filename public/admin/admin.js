@@ -195,9 +195,14 @@
   }
 
   // ── 라운드 구성 ────────────────────────
-  // 라운드마다 { kinds: 나올 단어 종류 수, show: 'text' | 'mix' | 'image' }. 표는 항상 라운드 수만큼 있다.
+  // 라운드마다 { kinds: 나올 단어 종류 수, show: 'text' | 'both' | 'mix', mix?: { text, both, image } }.
+  //   text = 모두 글자 · both = 모두 사진+이름 · mix = 글자 / 사진+이름 / 사진(이름 없음) 장수를 직접 정한다.
+  // 표는 항상 라운드 수만큼 있다.
   const planBody = $('#planBody');
-  const SHOWS = [['text', '단어'], ['mix', '섞기'], ['image', '사진']];
+  const CARDS = 8; // 라운드 카드 수 (서버 limits.js 의 GAME_MUSIC.cards)
+  const SHOWS = [['text', '단어'], ['both', '사진+단어'], ['mix', '섞기 (단어·사진+단어·사진만)']];
+  const MIX_PARTS = [['text', '단어'], ['both', '사진+단어'], ['image', '사진만']];
+  const DEFAULT_MIX = { text: 3, both: 3, image: 2 };
 
   function planRow(p) {
     const tr = document.createElement('tr');
@@ -210,21 +215,46 @@
     kinds.max = 8;
     kinds.value = p.kinds;
     kc.append(kinds, ' 개');
+
     const sc = document.createElement('td');
     const show = document.createElement('select');
     show.className = 'show';
     SHOWS.forEach(([v, label]) => show.add(new Option(label, v)));
     show.value = p.show;
     sc.appendChild(show);
-    tr.append(no, kc, sc);
+
+    // 섞기 장수 — 섞기일 때만 보인다
+    const mc = document.createElement('td');
+    const mixBox = document.createElement('div');
+    mixBox.className = 'mix-box';
+    const mix = p.mix || DEFAULT_MIX;
+    MIX_PARTS.forEach(([key, label]) => {
+      const lab = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.className = `mix-${key}`;
+      input.min = 0;
+      input.max = CARDS;
+      input.value = mix[key];
+      lab.append(`${label} `, input);
+      mixBox.appendChild(lab);
+    });
+    mixBox.hidden = p.show !== 'mix';
+    show.addEventListener('change', () => { mixBox.hidden = show.value !== 'mix'; });
+    mc.appendChild(mixBox);
+
+    tr.append(no, kc, sc, mc);
     return tr;
   }
 
   function readPlan() {
-    return [...planBody.rows].map((r) => ({
-      kinds: Number(r.querySelector('.kinds').value),
-      show: r.querySelector('.show').value,
-    }));
+    return [...planBody.rows].map((r) => {
+      const p = { kinds: Number(r.querySelector('.kinds').value), show: r.querySelector('.show').value };
+      if (p.show === 'mix') {
+        p.mix = Object.fromEntries(MIX_PARTS.map(([key]) => [key, Number(r.querySelector(`.mix-${key}`).value)]));
+      }
+      return p;
+    });
   }
 
   // 라운드 수가 바뀌면 줄 수를 맞춘다 (늘어나면 마지막 줄을 복사)
@@ -239,22 +269,24 @@
     [...planBody.rows].forEach((r, i) => { r.cells[0].textContent = `${i + 1}`; });
   }
 
-  // 추천: 앞 3/7 은 단어, 뒤 2/7 은 사진, 사이는 섞기. 단어 수는 3에서 1개씩 늘어 넣은 단어 수까지.
+  // 추천 (7라운드 기준): 단어 2 → 사진+단어 1 → 섞기 2 (3/3/2, 2/3/3) → 사진만 2 (섞기 0/0/8).
+  // 단어 수는 3에서 1개씩 늘어 넣은 단어 수까지.
   function recommendedPlan(n, wordCount) {
     const maxK = Math.max(2, Math.min(8, wordCount));
-    const text = Math.max(1, Math.round(n * 3 / 7));
-    const image = Math.min(n - text, Math.round(n * 2 / 7));
-    const mix = n - text - image;
-    return Array.from({ length: n }, (_, i) => ({
-      kinds: Math.min(maxK, 3 + i),
-      show: i < text ? 'text' : i < text + mix ? 'mix' : 'image',
-    }));
-  }
-
-  // 구성 없이 저장된 옛 세트 — 게임의 예전 자동 규칙과 같은 값(단어 수 4 → 5 → …, 모두 사진)으로 채워 보여 준다
-  function autoPlan(n, wordCount) {
-    const maxK = Math.max(2, Math.min(8, wordCount));
-    return Array.from({ length: n }, (_, i) => ({ kinds: Math.min(maxK, 4 + i), show: 'image' }));
+    const text = Math.max(1, Math.round(n * 2 / 7));
+    const both = Math.min(n - text, Math.round(n / 7));
+    const photo = Math.min(n - text - both, Math.round(n * 2 / 7));
+    const mixN = n - text - both - photo;
+    return Array.from({ length: n }, (_, i) => {
+      const kinds = Math.min(maxK, 3 + i);
+      if (i < text) return { kinds, show: 'text' };
+      if (i < text + both) return { kinds, show: 'both' };
+      if (i < text + both + mixN) {
+        const k = i - text - both;
+        return { kinds, show: 'mix', mix: k % 2 ? { text: 2, both: 3, image: 3 } : { text: 3, both: 3, image: 2 } };
+      }
+      return { kinds, show: 'mix', mix: { text: 0, both: 0, image: CARDS } };
+    });
   }
 
   function setPlan(plan) {
@@ -275,13 +307,18 @@
     // 단어 수 입력 상한 = 넣은 단어 수 (카드 8장이 최대)
     const maxK = Math.max(2, Math.min(8, words.length));
     planBody.querySelectorAll('.kinds').forEach((el) => { el.max = maxK; });
-    readPlan().forEach((p, i) => {
+    const plan = readPlan();
+    plan.forEach((p, i) => {
       if (p.kinds > words.length) msgs.push(`${i + 1}라운드 — 단어 수(${p.kinds})가 넣은 단어(${words.length}개)보다 많습니다.`);
+      if (p.show === 'mix') {
+        const sum = p.mix.text + p.mix.both + p.mix.image;
+        if (sum !== CARDS) msgs.push(`${i + 1}라운드 — 섞기 장수 합이 ${sum}장입니다. ${CARDS}장이 되게 맞춰 주세요.`);
+      }
     });
-    if (readPlan().some((p) => p.show !== 'text')) {
+    if (plan.some((p) => p.show === 'both' || (p.show === 'mix' && p.mix.text < CARDS))) {
       const bare = words.filter((w) => !w.image && !w.emoji).map((w) => w.text);
       const emojiOnly = words.filter((w) => !w.image && w.emoji).map((w) => w.text);
-      if (bare.length) msgs.push(`사진 · 이모지가 없어 사진 라운드에서도 글자로 나오는 단어: ${bare.join(', ')}`);
+      if (bare.length) msgs.push(`사진 · 이모지가 없어 사진 카드에서도 글자로 나오는 단어: ${bare.join(', ')}`);
       if (emojiOnly.length) msgs.push(`사진이 없어 이모지로 나오는 단어: ${emojiOnly.join(', ')}`);
     }
     warn.textContent = msgs.join('\n');
@@ -322,13 +359,11 @@
   function fill(s) {
     form.name.value = s.name;
     form.rounds.value = s.rounds;
-    form.showLabel.checked = s.showLabel;
     wordsEl.replaceChildren();
     s.words.forEach((w) => addWordRow(w));
-    // 구성이 없으면 — 옛 세트는 예전 자동 규칙대로, 새 세트(단어 없음)는 추천 구성으로 채운다
+    // 새 세트는 추천 구성으로 채운다 (저장된 세트는 서버가 늘 구성을 채워 보낸다)
     const wordCount = s.words.filter((w) => w.text).length;
-    setPlan(s.plan && s.plan.length ? s.plan
-      : wordCount ? autoPlan(s.rounds, wordCount) : recommendedPlan(s.rounds, 5));
+    setPlan(s.plan && s.plan.length ? s.plan : recommendedPlan(s.rounds, wordCount || 5));
     updateBpmNote();
     updatePlanWarn();
     dirty = false;
@@ -358,7 +393,7 @@
     currentId = null;
     $('#formTitle').textContent = '새 세트';
     $('#deleteBtn').hidden = true;
-    fill({ name: '', rounds: 5, showLabel: true,
+    fill({ name: '', rounds: 5,
       words: [{ text: '', emoji: '', image: '' }, { text: '', emoji: '', image: '' }] });
     renderList();
     form.name.focus();
@@ -370,7 +405,6 @@
     const body = {
       name: form.name.value.trim(),
       rounds: +form.rounds.value,
-      showLabel: form.showLabel.checked,
       plan: readPlan(),
       words: collectWords(),
     };

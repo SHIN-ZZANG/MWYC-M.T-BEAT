@@ -159,7 +159,7 @@ body {
 .card.text-only { padding-bottom: 0; }
 .card.text-only .card-emoji { font-size: 26cqmin; font-weight: 900; padding: 0 6cqmin; text-align: center; word-break: keep-all; }
 .card.text-only .card-text,
-.grid.no-label .card-text { display: none; }
+.card.no-label .card-text { display: none; }        /* 사진 카드(이름 없음) */
 
 .card.dim { opacity: .35; }                  /* 시작 전 미리보기 */
 .card.wait { visibility: hidden; }           /* 라운드 시작 — 듣기 박마다 한 장씩 나타난다 */
